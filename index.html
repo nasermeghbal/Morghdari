@@ -2,12 +2,47 @@
 *{box-sizing:border-box}body{margin:0;background:#f3f8f6;color:#183631;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,sans-serif}.top{background:linear-gradient(135deg,#087f70,#07554e);color:#fff;padding:20px 16px;position:sticky;top:0;z-index:5}.wrap{max-width:1100px;margin:auto}.brand{font-size:25px;font-weight:900}.sub{font-size:12px;opacity:.8}nav{display:flex;gap:7px;overflow:auto;padding:9px;background:#fff;position:sticky;top:78px;z-index:4}nav button{border:0;border-radius:11px;padding:9px 12px;white-space:nowrap;font-weight:800}nav .on{background:#087f70;color:#fff}.main{padding:14px}.panel{background:#fff;border:1px solid #dce9e5;border-radius:18px;padding:15px;margin-bottom:12px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.kpi b{display:block;font-size:22px;margin-top:5px}input,select{width:100%;padding:10px;border:1px solid #c9ddd8;border-radius:11px;font:inherit;margin:4px 0 10px}.primary{background:#087f70;color:#fff;border:0;border-radius:11px;padding:11px 15px;font-weight:900}.secondary{background:#fff;color:#087f70;border:1px solid #b9d8d1;border-radius:10px;padding:8px 11px}.ring{width:155px;height:155px;border-radius:50%;background:conic-gradient(#087f70 0 95%,#dfebe8 95%);display:grid;place-items:center;margin:auto}.ring div{width:115px;height:115px;background:#fff;border-radius:50%;display:grid;place-items:center;font-size:24px;font-weight:900}.login{max-width:420px;margin:50px auto}.logo{width:82px;height:82px;border-radius:24px;background:#fff;display:grid;place-items:center;font-size:43px;margin:auto}.hide{display:none}.row{display:flex;gap:8px;flex-wrap:wrap}.pill{background:#edf7f4;padding:7px 10px;border-radius:9px;font-size:12px}@media(max-width:800px){.grid{grid-template-columns:1fr 1fr}}@media(max-width:500px){.grid{grid-template-columns:1fr}}
 </style></head><body>
 <div id="login" class="wrap"><div class="panel login"><div class="logo">🐔</div><h1 style="text-align:center">سپید گوشت</h1><p style="text-align:center">سامانه مدیریت مرغداری</p><label>شماره موبایل</label><input id="phone" placeholder="09xxxxxxxxx" inputmode="tel"><button class="primary" style="width:100%" onclick="otp()">دریافت کد پیامکی</button><div id="code" class="hide"><label>کد تأیید</label><input id="c" maxlength="6" inputmode="numeric" placeholder="123456"><button class="primary" style="width:100%" onclick="go()">ورود</button><small>نسخه نمونه: کد 123456</small></div></div></div>
-<div id="app" class="hide"><header class="top"><div class="wrap"><div class="sub">☀️ صبح بخیر</div><div class="brand">سپید گوشت</div><div class="sub">امروز • روز گله • درصد بقا</div></div></header><div class="wrap"><nav id="nav"></nav><main class="main" id="main"></main></div></div>
+<div id="app" class="hide"><header class="top"><div class="wrap"><div class="sub">☀️ صبح بخیر</div><div class="brand">سپید گوشت</div><div class="sub">امروز • ${(()=>{let p=periods.find(x=>x.id===activePeriod);return p?`دوره: ${p.name} • شروع: ${p.start}`:""})()}</div></div></header><div class="wrap">
+<div class="panel" style="margin:10px 14px 0">
+<div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap">
+<div style="flex:1;min-width:220px"><label>📅 دوره فعال مرغداری</label>
+<select id="periodSelect" onchange="changePeriod(this.value)"></select></div>
+<button class="secondary" onclick="newPeriod()">➕ شروع دوره جدید</button>
+<button class="secondary" onclick="renamePeriod()">✏️ ویرایش نام دوره</button>
+</div>
+</div>
+<nav id="nav"></nav><main class="main" id="main"></main></div></div>
 <script>
+let periods=JSON.parse(localStorage.getItem("sepide_periods_v1")||"null")||[
+{id:"current",name:"دوره جاری",start:"1405/05/01",active:true}
+];
+let activePeriod=localStorage.getItem("sepide_active_period")||periods[0].id;
+function savePeriods(){localStorage.setItem("sepide_periods_v1",JSON.stringify(periods));localStorage.setItem("sepide_active_period",activePeriod)}
+function fillPeriods(){
+ const el=document.getElementById("periodSelect"); if(!el)return;
+ el.innerHTML=periods.map(x=>`<option value="${x.id}">${x.name} — شروع ${x.start}</option>`).join("");
+ el.value=activePeriod;
+}
+function changePeriod(id){if(!periods.some(x=>x.id===id))return;activePeriod=id;savePeriods();render()}
+function newPeriod(){
+ const name=prompt("نام دوره را وارد کنید","دوره جدید");
+ if(!name)return;
+ const start=prompt("تاریخ شروع دوره را به شمسی وارد کنید","1405/05/01");
+ if(!start)return;
+ const id="p"+Date.now();
+ periods.unshift({id,name,start,active:true});
+ activePeriod=id;savePeriods();fillPeriods();render();
+}
+function renamePeriod(){
+ const p=periods.find(x=>x.id===activePeriod);if(!p)return;
+ const name=prompt("نام دوره",p.name);if(name===null)return;
+ const start=prompt("تاریخ شروع دوره",p.start);if(start===null)return;
+ p.name=name||p.name;p.start=start||p.start;savePeriods();fillPeriods();render();
+}
 let tab="home";const tabs=[["home","🏠 داشبورد"],["flock","🐔 گله و تلفات"],["feed","🌾 دان و انبار"],["sales","⚖️ فروش و باسکول"],["finance","💰 مالی"],["partners","👥 شرکا"],["reports","📊 گزارش‌ها"]];
 function otp(){if(!/^09\d{9}$/.test(phone.value))return alert("شماره موبایل صحیح وارد کنید");code.className="";alert("نمونه: کد 123456")}
 function go(){if(c.value!=="123456")return alert("کد نمونه 123456 است");login.className="hide";app.className="";render()}
-function render(){nav.innerHTML=tabs.map(x=>`<button class="${x[0]==tab?"on":""}" onclick="tab='${x[0]}';render()">${x[1]}</button>`).join("");let p={
+function render(){fillPeriods();nav.innerHTML=tabs.map(x=>`<button class="${x[0]==tab?"on":""}" onclick="tab='${x[0]}';render()">${x[1]}</button>`).join("");let p={
 home:`<div class="grid"><div class="panel kpi">موجودی کل گله<b>۴۵٬۶۸۰</b>قطعه</div><div class="panel kpi">تلفات کل<b>۲٬۳۲۰</b>۵٪</div><div class="panel kpi">دان امروز<b>۸٬۴۵۰</b>کیلو</div><div class="panel kpi">سود/زیان<b>۱٬۲۵۰٬۰۰۰٬۰۰۰</b>ریال</div></div><div class="panel"><h2 style="text-align:center">درصد بقا</h2><div class="ring"><div>۹۵٪<small>بقا</small></div></div></div><div class="panel"><h2>۴ سالن</h2><div class="grid">${[1,2,3,4].map(i=>`<div class="panel"><b>سالن ${i}</b><p>جوجه: ۱۲٬۰۰۰</p><p>تلفات: ۱٫۲٪</p><p>موجودی: ۱۱٬۸۰۰</p></div>`).join("")}</div></div><div class="panel"><h2>نمودارها</h2><div class="row"><span class="pill">📈 تلفات روزانه/هفتگی</span><span class="pill">🌾 دان روزانه/هفتگی</span><span class="pill">⚖️ تناژ بارگیری</span><span class="pill">💰 هزینه روزانه</span></div></div><div class="panel"><h2>🌤️ هواشناسی روزانه</h2><p>در نسخه نهایی از سرویس آنلاین دریافت می‌شود.</p></div>`,
 flock:`<div class="panel"><h2>گله و تلفات</h2><p>۴ سالن • جوجه‌ریزی • تلفات اولیه مسیر • تلفات روزانه • موجودی لحظه‌ای • درصد روزانه و کل • روز گله</p><button class="primary">➕ ثبت تلفات</button></div>`,
 feed:`<div class="panel"><h2>دان و انبار</h2><p>آغازین، پیش‌دان، میان‌دان، پس‌دان، ذرت، سویا، کنسانتره، روغن، صدف جوش، شیرین، نمک، ضدککسیدیوز و توکسین‌بایندر؛ برند، تناژ، فی ریال و موجودی.</p></div>`,
