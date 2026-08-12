@@ -32,7 +32,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:8px 5px;b
 <div class="card"><div class="mut">دان مصرفی</div><div class="big" id="feeduse">0 kg</div></div><div class="card"><div class="mut">درآمد</div><div class="big" id="income">0</div></div>
 <div class="card"><div class="mut">هزینه</div><div class="big" id="expense">0</div></div><div class="card"><div class="mut">سود/زیان</div><div class="big" id="profit">0</div></div>
 </div>
-<div class="panel"><h2>دوره جاری</h2><div class="grid"><div><label>نام دوره</label><input id="period" placeholder="مثلاً دوره تابستان"></div><div><label>تاریخ جوجه‌ریزی</label><input id="pdate" type="date"></div></div><button class="primary" onclick="savePeriod()">ذخیره دوره</button></div>
+<div class="panel"><h2>دوره جاری</h2><div class="grid"><div><label>نام دوره</label><input id="period" placeholder="مثلاً دوره تابستان"></div><div><label>تاریخ جوجه‌ریزی</label><input id="pdate" type="text" inputmode="numeric" placeholder="1405/05/21" maxlength="10"></div></div><button class="primary" onclick="savePeriod()">ذخیره دوره</button></div>
 </section>
 
 <section id="flock" class="tab">
@@ -42,19 +42,19 @@ table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:8px 5px;b
 </section>
 
 <section id="feed" class="tab">
-<div class="panel"><h2>ورود مواد اولیه</h2><div class="grid3"><div><label>تاریخ</label><input id="fd" type="date"></div><div><label>ماده</label><select id="ft"><option>دان آماده</option><option>ذرت</option><option>سویا</option><option>کنسانتره</option><option>جوش صدف</option><option>نمک</option><option>ضدکوکسیدیوز</option><option>توکسین</option><option>سایر</option></select></div><div><label>مقدار (کیلو)</label><input id="fq" type="number" min="0"></div><div><label>قیمت واحد</label><input id="fp" type="number" min="0"></div><div><label>فروشنده</label><input id="fs"></div></div><button class="primary" onclick="addIn()">ثبت ورود</button></div>
-<div class="panel"><h2>دان مصرفی روزانه</h2><div class="grid3"><div><label>تاریخ</label><input id="ud" type="date"></div><div><label>سالن</label><select id="us"><option>سالن 1</option><option>سالن 2</option><option>سالن 3</option><option>سالن 4</option></select></div><div><label>مقدار (کیلو)</label><input id="uq" type="number" min="0"></div></div><button class="primary" onclick="addUse()">ثبت مصرف</button></div>
+<div class="panel"><h2>ورود مواد اولیه</h2><div class="grid3"><div><label>تاریخ</label><input id="fd" type="text" inputmode="numeric" placeholder="1405/05/21" maxlength="10"></div><div><label>ماده</label><select id="ft"><option>دان آماده</option><option>ذرت</option><option>سویا</option><option>کنسانتره</option><option>جوش صدف</option><option>نمک</option><option>ضدکوکسیدیوز</option><option>توکسین</option><option>سایر</option></select></div><div><label>مقدار (کیلو)</label><input id="fq" type="number" min="0"></div><div><label>قیمت واحد</label><input id="fp" type="number" min="0"></div><div><label>فروشنده</label><input id="fs"></div></div><button class="primary" onclick="addIn()">ثبت ورود</button></div>
+<div class="panel"><h2>دان مصرفی روزانه</h2><div class="grid3"><div><label>تاریخ</label><input id="ud" type="text" inputmode="numeric" placeholder="1405/05/21" maxlength="10"></div><div><label>سالن</label><select id="us"><option>سالن 1</option><option>سالن 2</option><option>سالن 3</option><option>سالن 4</option></select></div><div><label>مقدار (کیلو)</label><input id="uq" type="number" min="0"></div></div><button class="primary" onclick="addUse()">ثبت مصرف</button></div>
 <div class="panel"><h2>موجودی انبار</h2><div id="inv"></div></div>
 </section>
 
 <section id="cost" class="tab">
-<div class="panel"><h2>ثبت هزینه</h2><div class="grid3"><div><label>تاریخ</label><input id="cd" type="date"></div><div><label>دسته</label><select id="ct"><option>جوجه</option><option>دان</option><option>دارو و واکسن</option><option>کارگر</option><option>برق</option><option>سوخت</option><option>تعمیرات</option><option>حمل‌ونقل</option><option>بستر</option><option>ضدعفونی</option><option>آب</option><option>متفرقه</option></select></div><div><label>مبلغ</label><input id="ca" type="number" min="0"></div><div><label>پرداخت‌کننده</label><input id="cp" placeholder="من / شریک ۱ / ..."></div><div><label>توضیح</label><input id="cn"></div></div><button class="primary" onclick="addCost()">ثبت هزینه</button></div>
+<div class="panel"><h2>ثبت هزینه</h2><div class="grid3"><div><label>تاریخ</label><input id="cd" type="text" inputmode="numeric" placeholder="1405/05/21" maxlength="10"></div><div><label>دسته</label><select id="ct"><option>جوجه</option><option>دان</option><option>دارو و واکسن</option><option>کارگر</option><option>برق</option><option>سوخت</option><option>تعمیرات</option><option>حمل‌ونقل</option><option>بستر</option><option>ضدعفونی</option><option>آب</option><option>متفرقه</option></select></div><div><label>مبلغ</label><input id="ca" type="number" min="0"></div><div><label>پرداخت‌کننده</label><input id="cp" placeholder="من / شریک ۱ / ..."></div><div><label>توضیح</label><input id="cn"></div></div><button class="primary" onclick="addCost()">ثبت هزینه</button></div>
 <div class="panel"><h2>خلاصه شرکا</h2><div id="partners"></div></div><div class="panel"><h2>آخرین هزینه‌ها</h2><div id="costTable"></div></div>
 </section>
 
 <section id="sales" class="tab">
-<div class="panel"><h2>فروش مرغ</h2><div class="grid3"><div><label>تاریخ</label><input id="sd" type="date"></div><div><label>تعداد</label><input id="sq" type="number" min="0"></div><div><label>وزن کل (کیلو)</label><input id="sw" type="number" min="0"></div><div><label>قیمت هر کیلو</label><input id="sp" type="number" min="0"></div><div><label>خریدار</label><input id="sb"></div></div><button class="primary" onclick="addChicken()">ثبت فروش مرغ</button></div>
-<div class="panel"><h2>فروش کود</h2><div class="grid3"><div><label>تاریخ</label><input id="nd" type="date"></div><div><label>مقدار</label><input id="nq" type="number" min="0"></div><div><label>قیمت واحد</label><input id="np" type="number" min="0"></div><div><label>خریدار</label><input id="nb"></div></div><button class="primary" onclick="addManure()">ثبت فروش کود</button></div>
+<div class="panel"><h2>فروش مرغ</h2><div class="grid3"><div><label>تاریخ</label><input id="sd" type="text" inputmode="numeric" placeholder="1405/05/21" maxlength="10"></div><div><label>تعداد</label><input id="sq" type="number" min="0"></div><div><label>وزن کل (کیلو)</label><input id="sw" type="number" min="0"></div><div><label>قیمت هر کیلو</label><input id="sp" type="number" min="0"></div><div><label>خریدار</label><input id="sb"></div></div><button class="primary" onclick="addChicken()">ثبت فروش مرغ</button></div>
+<div class="panel"><h2>فروش کود</h2><div class="grid3"><div><label>تاریخ</label><input id="nd" type="text" inputmode="numeric" placeholder="1405/05/21" maxlength="10"></div><div><label>مقدار</label><input id="nq" type="number" min="0"></div><div><label>قیمت واحد</label><input id="np" type="number" min="0"></div><div><label>خریدار</label><input id="nb"></div></div><button class="primary" onclick="addManure()">ثبت فروش کود</button></div>
 <div class="panel"><h2>سوابق فروش</h2><div id="salesTable"></div></div>
 </section>
 
@@ -82,41 +82,60 @@ function todayJ(){
   return a.map(v=>String(v).padStart(2,"0")).join("/");
 }
 function normalizeJ(s){
-  s=(s||"").replace(/[^\d]/g,"");
+  s=(s||"").replace(/[^0-9]/g,"");
   if(s.length===8)s=s.slice(0,4)+"/"+s.slice(4,6)+"/"+s.slice(6);
   return s;
 }
+function isJ(s){return /^1[34][0-9]{2}\/[0-9]{2}\/[0-9]{2}$/.test(s)}
+function jdate(s){
+  if(!s)return "";
+  if(isJ(s))return s;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)){
+    let p=s.split("-"); let a=g2j(+p[0],+p[1],+p[2]);
+    return a.map(v=>String(v).padStart(2,"0")).join("/");
+  }
+  return s;
+}
+function setTodayDates(){
+  let t=todayJ(); ["pdate","md","fd","ud","cd","sd","nd"].forEach(id=>{let e=$(id);if(e)e.value=t});
+}
+function dateValue(id){return normalizeJ($(id).value)}
+
 
 function save(){localStorage.setItem(K,JSON.stringify(d));render()}
-function savePeriod(){d.period=$("period").value||"دوره جدید";d.date=$("pdate").value;save()}
+function savePeriod(){
+  let dt=dateValue("pdate");
+  if(!isJ(dt)){alert("تاریخ جوجه‌ریزی را به شکل 1405/05/21 وارد کنید.");return}
+  d.period=$("period").value||"دوره جدید";d.date=dt;save()
+}
 function addMort(){
   let q=n("mq"), jd=normalizeJ($("md").value);
-  if(!q || !/^1[34]\\d{2}\\/\\d{2}\\/\\d{2}$/.test(jd)){alert("تاریخ شمسی را به شکل 1405/05/21 وارد کنید.");return}
+  if(!q || !isJ(jd)){alert("تاریخ شمسی را به شکل 1405/05/21 وارد کنید.");return}
   d.mort.push({date:jd,salon:$("ms").value,q});save()
 }
-function addIn(){let q=n("fq");if(!q)return;d.in.push({date:$("fd").value,type:$("ft").value,q,p:n("fp"),seller:$("fs").value});save()}
-function addUse(){let q=n("uq");if(!q)return;d.use.push({date:$("ud").value,salon:$("us").value,q});save()}
-function addCost(){let a=n("ca");if(!a)return;d.cost.push({date:$("cd").value,type:$("ct").value,a,payer:$("cp").value||"نامشخص",note:$("cn").value});save()}
-function addChicken(){let w=n("sw");if(!w)return;d.sales.push({kind:"مرغ",date:$("sd").value,q:n("sq"),w,a:w*n("sp"),buyer:$("sb").value});save()}
-function addManure(){let q=n("nq");if(!q)return;d.sales.push({kind:"کود",date:$("nd").value,q,w:0,a:q*n("np"),buyer:$("nb").value});save()}
+function addIn(){let q=n("fq"),dt=dateValue("fd");if(!q)return;if(!isJ(dt)){alert("تاریخ را به شکل 1405/05/21 وارد کنید.");return}d.in.push({date:dt,type:$("ft").value,q,p:n("fp"),seller:$("fs").value});save()}
+function addUse(){let q=n("uq"),dt=dateValue("ud");if(!q)return;if(!isJ(dt)){alert("تاریخ را به شکل 1405/05/21 وارد کنید.");return}d.use.push({date:dt,salon:$("us").value,q});save()}
+function addCost(){let a=n("ca"),dt=dateValue("cd");if(!a)return;if(!isJ(dt)){alert("تاریخ را به شکل 1405/05/21 وارد کنید.");return}d.cost.push({date:dt,type:$("ct").value,a,payer:$("cp").value||"نامشخص",note:$("cn").value});save()}
+function addChicken(){let w=n("sw"),dt=dateValue("sd");if(!w)return;if(!isJ(dt)){alert("تاریخ را به شکل 1405/05/21 وارد کنید.");return}d.sales.push({kind:"مرغ",date:dt,q:n("sq"),w,a:w*n("sp"),buyer:$("sb").value});save()}
+function addManure(){let q=n("nq"),dt=dateValue("nd");if(!q)return;if(!isJ(dt)){alert("تاریخ را به شکل 1405/05/21 وارد کنید.");return}d.sales.push({kind:"کود",date:dt,q,w:0,a:q*n("np"),buyer:$("nb").value});save()}
 function tbl(rows){if(!rows.length)return '<div class="hint">هنوز اطلاعاتی ثبت نشده است.</div>';return '<div style="overflow:auto"><table><tr>'+rows[0].map(x=>`<th>${x}</th>`).join("")+'</tr>'+rows.slice(1).map(r=>'<tr>'+r.map(x=>`<td>${x}</td>`).join("")+'</tr>').join("")+'</table></div>'}
 function render(){
-$("period").value=d.period;$("pdate").value=d.date;
+$("period").value=d.period;$("pdate").value=jdate(d.date);
 let birds=d.birds.reduce((a,b)=>a+b,0),dead=d.mort.reduce((a,x)=>a+x.q,0),fu=d.use.reduce((a,x)=>a+x.q,0),inc=d.sales.reduce((a,x)=>a+x.a,0),cost=d.cost.reduce((a,x)=>a+x.a,0);
 $("birds").textContent=fmt(birds);$("dead").textContent=fmt(dead);$("alive").textContent=fmt(Math.max(0,birds-dead));$("mort").textContent=birds?(dead/birds*100).toFixed(2)+"%":"0%";$("feeduse").textContent=fmt(fu)+" kg";$("income").textContent=fmt(inc);$("expense").textContent=fmt(cost);$("profit").textContent=fmt(inc-cost);
 $("salons").innerHTML=d.birds.map((b,i)=>{let s="سالن "+(i+1),deadS=d.mort.filter(x=>x.salon===s).reduce((a,x)=>a+x.q,0),feedS=d.use.filter(x=>x.salon===s).reduce((a,x)=>a+x.q,0);return `<div class="salon"><h3>${s}</h3><div class="grid3"><div><label>جوجه‌ریزی</label><input type="number" value="${b}" onchange="d.birds[${i}]=Number(this.value);save()"></div><div><label>تلفات</label><div class="big">${fmt(deadS)}</div></div><div><label>تلفات %</label><div class="big">${b?(deadS/b*100).toFixed(2):0}%</div></div><div><label>موجودی</label><div class="big">${fmt(Math.max(0,b-deadS))}</div></div><div><label>دان مصرفی</label><div class="big">${fmt(feedS)} kg</div></div></div></div>`}).join("");
-$("mortTable").innerHTML=tbl([["تاریخ","سالن","تلفات"],...d.mort.slice(-30).reverse().map(x=>[x.date,x.salon,fmt(x.q)])]);
+$("mortTable").innerHTML=tbl([["تاریخ شمسی","سالن","تلفات"],...d.mort.slice(-30).reverse().map(x=>[jdate(x.date),x.salon,fmt(x.q)])]);
 let mats={};d.in.forEach(x=>mats[x.type]=(mats[x.type]||0)+x.q);
 $("inv").innerHTML=tbl([["ماده","ورودی kg","مصرف کل kg","موجودی kg"],...Object.keys(mats).map(k=>{let totalIn=mats[k],cons=(k==="دان آماده"?d.use.reduce((a,x)=>a+x.q,0):0);return [k,fmt(totalIn),fmt(cons),fmt(totalIn-cons)]})]);
 let pp={};d.cost.forEach(x=>pp[x.payer]=(pp[x.payer]||0)+x.a);
 $("partners").innerHTML=tbl([["پرداخت‌کننده","پرداختی"],...Object.entries(pp).map(([k,v])=>[k,fmt(v)])]);
-$("costTable").innerHTML=tbl([["تاریخ","دسته","مبلغ","پرداخت‌کننده"],...d.cost.slice(-25).reverse().map(x=>[x.date,x.type,fmt(x.a),x.payer])]);
-$("salesTable").innerHTML=tbl([["تاریخ","نوع","مقدار","وزن","مبلغ","خریدار"],...d.sales.slice(-25).reverse().map(x=>[x.date,x.kind,fmt(x.q),x.w?fmt(x.w):"-",fmt(x.a),x.buyer])]);
+$("costTable").innerHTML=tbl([["تاریخ شمسی","دسته","مبلغ","پرداخت‌کننده"],...d.cost.slice(-25).reverse().map(x=>[jdate(x.date),x.type,fmt(x.a),x.payer])]);
+$("salesTable").innerHTML=tbl([["تاریخ شمسی","نوع","مقدار","وزن","مبلغ","خریدار"],...d.sales.slice(-25).reverse().map(x=>[jdate(x.date),x.kind,fmt(x.q),x.w?fmt(x.w):"-",fmt(x.a),x.buyer])]);
 let chicken=d.sales.filter(x=>x.kind==="مرغ"),weight=chicken.reduce((a,x)=>a+x.w,0),fcr=weight?fu/weight:0,profit=inc-cost,perBird=birds?cost/birds:0;
 $("reportBox").innerHTML=`<div class="cards"><div class="card"><div class="mut">قیمت تمام‌شده/قطعه</div><div class="big">${fmt(perBird)}</div></div><div class="card"><div class="mut">دان/کیلو مرغ (FCR)</div><div class="big">${fcr?fcr.toFixed(2):"—"}</div></div><div class="card"><div class="mut">درآمد کل</div><div class="big">${fmt(inc)}</div></div><div class="card"><div class="mut">سود/زیان</div><div class="big ${profit>=0?"ok":"bad"}">${fmt(profit)}</div></div></div>`;
 $("salonReport").innerHTML=tbl([["سالن","جوجه","تلفات","تلفات %","زنده","دان kg"],...d.birds.map((b,i)=>{let s="سالن "+(i+1),x=d.mort.filter(z=>z.salon===s).reduce((a,z)=>a+z.q,0),f=d.use.filter(z=>z.salon===s).reduce((a,z)=>a+z.q,0);return [s,fmt(b),fmt(x),b?(x/b*100).toFixed(2)+"%":"0%",fmt(Math.max(0,b-x)),fmt(f)]})]);
 }
 document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));$(b.dataset.t).classList.add("active");render()});
-const t=new Date().toISOString().slice(0,10);["fd","ud","cd","sd","nd"].forEach(x=>$(x).value=t);$("md").value=todayJ();render();
+setTodayDates();render();
 </script>
 </body></html>
