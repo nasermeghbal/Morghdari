@@ -20,18 +20,22 @@ input,select{width:100%;padding:10px;border-radius:9px;border:1px solid #1d3a35;
 </style>
 </head>
 <body>
-<div id="login"><div class="loginbox"><h1>🐔 سپید گوشت</h1><p class="muted">سامانه مدیریت مرغداری</p>
+<div id="login" class="hidden"><div class="loginbox"><h1>🐔 سپید گوشت</h1><p class="muted">سامانه مدیریت مرغداری</p>
 <div id="phoneStep"><label>شماره موبایل</label><input id="phone" inputmode="tel" placeholder="09xxxxxxxxx"><button class="btn primary" style="width:100%;margin-top:10px" onclick="sendCode()">دریافت کد پیامکی</button></div>
 <div id="codeStep" class="hidden"><label>کد تأیید</label><input id="otp" inputmode="numeric"><button class="btn primary" style="width:100%;margin-top:10px" onclick="enterApp()">ورود</button><p class="muted">نسخه آزمایشی: ارسال SMS غیرفعال است و ورود بدون کد انجام می‌شود.</p></div></div></div>
 
-<main id="app" class="wrap hidden">
+<main id="app" class="wrap">
 <div class="box" style="display:flex;justify-content:space-between;align-items:center">
 <div><h1>🐔 سپید گوشت</h1><span class="muted">مدیریت حرفه‌ای فارم</span></div>
-<div><span id="today"></span> <button class="btn" onclick="logout()">خروج</button></div>
+<div><span id="today"></span><div class="actions" style="margin-top:8px">
+<button class="btn primary" onclick="backupData()">💾 پشتیبان‌گیری</button>
+<button class="btn" onclick="document.getElementById("restoreFile").click()">♻️ بازیابی</button>
+<input id="restoreFile" type="file" accept=".json,application/json" style="display:none" onchange="restoreData(event)">
+</div></div>
 </div>
 <div id="nav" class="nav"></div>
 <section id="view"></section>
-<div class="about">Sepid Goosht Poultry Management | Version 1.0.0 | Developed by Naser Jafarzadeh | © 2026 Naser Jafarzadeh</div>
+<div class="about">Sepid Goosht Poultry Management | Version 1.2.0 | Developed by Naser Jafarzadeh | © 2026 Naser Jafarzadeh</div>
 </main>
 
 <script>
@@ -99,7 +103,55 @@ function addP(){db.partners.push({id:uid(),name:pn.value,phone:pp.value,capital:
 function receipts(){return `<div class="box"><h2>دریافتی‌ها</h2><div class="form">${field("rp","شریک")}${field("rf","دریافت از")}${field("ra","مبلغ ریال","number")}${field("rd","تاریخ شمسی")}${field("rn","توضیحات")}</div><button class="btn primary" style="margin-top:10px" onclick="addR()">ثبت دریافتی</button></div><div class="box">${tbl("receipts",["شریک","از","مبلغ","تاریخ","توضیحات"],["partner","from","amount","date","note"])}</div>`}
 function addR(){db.receipts.push({id:uid(),partner:rp.value,from:rf.value,amount:+ra.value||0,date:rd.value||today(),note:rn.value});save()}
 function reports(){let total=db.expenses.reduce((s,x)=>s+(+x.amount||0),0);return `<div class="grid"><div class="box"><div class="label">جمع هزینه</div><div class="metric">${money(total)}</div></div><div class="box"><div class="label">جمع فروش</div><div class="metric">${money(db.sales.reduce((s,x)=>s+(+x.amount||0),0))}</div></div></div><div class="box"><h3>هزینه هر شریک</h3>${db.partners.map(p=>`<p>${p.name}: <b>${money(db.expenses.filter(e=>e.partner==p.name).reduce((s,x)=>s+(+x.amount||0),0))}</b></p>`).join("")}</div><button class="btn primary" onclick="window.print()">خروجی PDF / چاپ</button>`}
-function about(){return `<div class="box" style="text-align:center;padding:45px"><h1>Sepid Goosht Poultry Management</h1><p class="muted">Professional Poultry Farm Management System</p><p><b>Version 1.0.0</b></p><p>Developed by <b>Naser Jafarzadeh</b></p><p>© 2026 Naser Jafarzadeh</p></div>`}
+function about(){return `<div class="box" style="text-align:center;padding:45px"><h1>Sepid Goosht Poultry Management</h1><p class="muted">Professional Poultry Farm Management System</p><p><b>Version 1.2.0</b></p><p>Developed by <b>Naser Jafarzadeh</b></p><p>© 2026 Naser Jafarzadeh</p></div>`}
+
+function backupData(){
+  try{
+    const payload={
+      app:"Sepid Goosht Poultry Management",
+      version:"1.2.0",
+      createdAt:new Date().toISOString(),
+      data:db
+    };
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    const d=new Date();
+    const stamp=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+    a.href=url;
+    a.download="Sepid_Goosht_Backup_"+stamp+".json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    alert("پشتیبان‌گیری انجام شد و فایل Backup روی گوشی ذخیره/دانلود شد.");
+  }catch(e){
+    alert("پشتیبان‌گیری انجام نشد.");
+  }
+}
+function restoreData(ev){
+  const file=ev.target.files && ev.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(){
+    try{
+      const payload=JSON.parse(reader.result);
+      const restored=payload && payload.data ? payload.data : payload;
+      if(!restored || typeof restored!=="object" || !Array.isArray(restored.flock)){
+        throw new Error("invalid");
+      }
+      if(!confirm("اطلاعات فعلی با این Backup جایگزین شود؟")) return;
+      db=restored;
+      save();
+      alert("بازیابی اطلاعات با موفقیت انجام شد.");
+    }catch(e){
+      alert("فایل Backup معتبر نیست.");
+    }finally{
+      ev.target.value="";
+    }
+  };
+  reader.readAsText(file);
+}
 function render(){todayEl=document.getElementById("today");todayEl.textContent=today();show("dash")}
 if(localStorage.getItem("sepid_login")=="1"){login.classList.add("hidden");app.classList.remove("hidden")}
 render();
