@@ -1,98 +1,93 @@
-<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#087f70"><title>سپید گوشت</title><style>
-*{box-sizing:border-box}body{margin:0;background:#f3f8f6;color:#183631;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,sans-serif}.top{background:linear-gradient(135deg,#087f70,#07554e);color:#fff;padding:20px 16px;position:sticky;top:0;z-index:5}.wrap{max-width:1100px;margin:auto}.brand{font-size:25px;font-weight:900}.sub{font-size:12px;opacity:.8}nav{display:flex;gap:7px;overflow:auto;padding:9px;background:#fff;position:sticky;top:78px;z-index:4}nav button{border:0;border-radius:11px;padding:9px 12px;white-space:nowrap;font-weight:800}nav .on{background:#087f70;color:#fff}.main{padding:14px}.panel{background:#fff;border:1px solid #dce9e5;border-radius:18px;padding:15px;margin-bottom:12px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.kpi b{display:block;font-size:22px;margin-top:5px}input,select{width:100%;padding:10px;border:1px solid #c9ddd8;border-radius:11px;font:inherit;margin:4px 0 10px}.primary{background:#087f70;color:#fff;border:0;border-radius:11px;padding:11px 15px;font-weight:900}.secondary{background:#fff;color:#087f70;border:1px solid #b9d8d1;border-radius:10px;padding:8px 11px}.ring{width:155px;height:155px;border-radius:50%;background:conic-gradient(#087f70 0 95%,#dfebe8 95%);display:grid;place-items:center;margin:auto}.ring div{width:115px;height:115px;background:#fff;border-radius:50%;display:grid;place-items:center;font-size:24px;font-weight:900}.login{max-width:420px;margin:50px auto}.logo{width:82px;height:82px;border-radius:24px;background:#fff;display:grid;place-items:center;font-size:43px;margin:auto}.hide{display:none}.row{display:flex;gap:8px;flex-wrap:wrap}.pill{background:#edf7f4;padding:7px 10px;border-radius:9px;font-size:12px}@media(max-width:800px){.grid{grid-template-columns:1fr 1fr}}@media(max-width:500px){.grid{grid-template-columns:1fr}}
-</style></head><body>
-<div id="login" class="wrap"><div class="panel login"><div class="logo">🐔</div><h1 style="text-align:center">سپید گوشت</h1><p style="text-align:center">سامانه مدیریت مرغداری</p><label>شماره موبایل</label><input id="phone" placeholder="09xxxxxxxxx" inputmode="tel"><button class="primary" style="width:100%" onclick="otp()">دریافت کد پیامکی</button><div id="code" class="hide"><label>کد تأیید</label><input id="c" maxlength="6" inputmode="numeric" placeholder="123456"><button class="primary" style="width:100%" onclick="go()">ورود</button><small>نسخه نمونه: کد 123456</small></div></div></div>
-<div id="app" class="hide"><header class="top"><div class="wrap"><div class="sub">☀️ صبح بخیر</div><div class="brand">سپید گوشت</div><div class="sub">امروز • ${(()=>{let p=periods.find(x=>x.id===activePeriod);return p?`دوره: ${p.name} • شروع: ${p.start}`:""})()}</div></div></header><div class="wrap">
-<div class="panel" style="margin:10px 14px 0">
-<div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap">
-<div style="flex:1;min-width:220px"><label>📅 دوره فعال مرغداری</label>
-<select id="periodSelect" onchange="changePeriod(this.value)"></select></div>
-<button class="secondary" onclick="newPeriod()">➕ شروع دوره جدید</button>
-<button class="secondary" onclick="renamePeriod()">✏️ ویرایش نام دوره</button>
-</div>
-</div>
-<nav id="nav"></nav><main class="main" id="main"></main></div></div>
-<script>
-let periods=JSON.parse(localStorage.getItem("sepide_periods_v1")||"null")||[
-{id:"current",name:"دوره جاری",start:"1405/05/01",active:true}
-];
-let activePeriod=localStorage.getItem("sepide_active_period")||periods[0].id;
-function savePeriods(){localStorage.setItem("sepide_periods_v1",JSON.stringify(periods));localStorage.setItem("sepide_active_period",activePeriod)}
-function fillPeriods(){
- const el=document.getElementById("periodSelect"); if(!el)return;
- el.innerHTML=periods.map(x=>`<option value="${x.id}">${x.name} — شروع ${x.start}</option>`).join("");
- el.value=activePeriod;
-}
-function changePeriod(id){if(!periods.some(x=>x.id===id))return;activePeriod=id;savePeriods();render()}
-function newPeriod(){
- const name=prompt("نام دوره را وارد کنید","دوره جدید");
- if(!name)return;
- const start=prompt("تاریخ شروع دوره را به شمسی وارد کنید","1405/05/01");
- if(!start)return;
- const id="p"+Date.now();
- periods.unshift({id,name,start,active:true});
- activePeriod=id;savePeriods();fillPeriods();render();
-}
-function renamePeriod(){
- const p=periods.find(x=>x.id===activePeriod);if(!p)return;
- const name=prompt("نام دوره",p.name);if(name===null)return;
- const start=prompt("تاریخ شروع دوره",p.start);if(start===null)return;
- p.name=name||p.name;p.start=start||p.start;savePeriods();fillPeriods();render();
-}
-let tab="home";const tabs=[["home","🏠 داشبورد"],["flock","🐔 گله و تلفات"],["feed","🌾 دان و انبار"],["sales","💰 فروش"],["finance","💰 مالی"],["partners","👥 شرکا"],["reports","📊 گزارش‌ها"]];
-function otp(){if(!/^09\d{9}$/.test(phone.value))return alert("شماره موبایل صحیح وارد کنید");code.className="";alert("نمونه: کد 123456")}
-function go(){if(c.value!=="123456")return alert("کد نمونه 123456 است");login.className="hide";app.className="";render()}
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sepid Goosht</title>
+<style>
+body{margin:0;background:#071412;color:#eef8f5;font-family:Tahoma,Arial,sans-serif}
+.wrap{max-width:1200px;margin:auto;padding:14px}.box{background:#0c211e;border:1px solid #1d3a35;border-radius:18px;padding:16px;margin-bottom:12px}
+h1,h2,h3{margin-top:0}.muted{color:#91aaa5;font-size:12px}
+.nav{display:flex;gap:7px;overflow:auto;margin:12px 0}.nav button,.btn{border:1px solid #1d3a35;background:#102925;color:#fff;border-radius:10px;padding:10px 13px;white-space:nowrap}
+.nav button.active,.primary{background:#159b82;border-color:#159b82}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.metric{font-size:24px;font-weight:bold;margin-top:6px}.label{font-size:12px;color:#91aaa5}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:9px}
+label{display:block;font-size:11px;color:#91aaa5;margin-bottom:4px}
+input,select{width:100%;padding:10px;border-radius:9px;border:1px solid #1d3a35;background:#071613;color:#fff}
+.table{width:100%;border-collapse:collapse;min-width:650px}.scroll{overflow:auto}.table th,.table td{padding:9px;border-bottom:1px solid #1d3a35;font-size:12px;text-align:right}
+.actions{display:flex;gap:6px;flex-wrap:wrap}.danger{background:#481d1d}.about{text-align:center;color:#91aaa5;font-size:11px;padding:12px}
+#login{position:fixed;inset:0;background:#03100e;display:grid;place-items:center;z-index:5}.loginbox{width:min(390px,90%);background:#0c211e;border:1px solid #1d3a35;border-radius:20px;padding:24px}.hidden{display:none}
+</style>
+</head>
+<body>
+<div id="login"><div class="loginbox"><h1>🐔 سپید گوشت</h1><p class="muted">سامانه مدیریت مرغداری</p>
+<div id="phoneStep"><label>شماره موبایل</label><input id="phone" inputmode="tel" placeholder="09xxxxxxxxx"><button class="btn primary" style="width:100%;margin-top:10px" onclick="sendCode()">دریافت کد پیامکی</button></div>
+<div id="codeStep" class="hidden"><label>کد تأیید</label><input id="otp" inputmode="numeric"><button class="btn primary" style="width:100%;margin-top:10px" onclick="enterApp()">ورود</button><p class="muted">نمونه آزمایشی: 123456</p></div></div></div>
 
-function getChickenSales(){try{return JSON.parse(localStorage.getItem("sepide_chicken_sales_v1")||"[]")}catch(e){return[]}}
-function saveChickenSale(){
- const a=getChickenSales(), empty=Number(chEmpty.value)||0, full=Number(chFull.value)||0;
- a.push({date:chDate.value,bill:chBill.value,empty,full,net:Math.max(0,full-empty),vehicle:chVehicle.value,plate:chPlate.value,driver:chDriver.value,phone:chPhone.value,dest:chDest.value,buyer:chBuyer.value,salon:chSalon.value,birds:Number(chBirds.value)||0,amount:Number(chAmount.value)||0});
- localStorage.setItem("sepide_chicken_sales_v1",JSON.stringify(a));render();
-}
-function renderChickenSales(){
- const a=getChickenSales(), total=a.reduce((x,r)=>x+(Number(r.net)||0),0), box=document.getElementById("chickenSalesTable");
- if(!box)return;
- chTotal.textContent=total.toLocaleString("fa-IR")+" کیلو";chTonnage.textContent=(total/1000).toLocaleString("fa-IR",{maximumFractionDigits:2})+" تن";
- box.innerHTML=a.length?`<div style="overflow:auto"><table><tr><th>تاریخ</th><th>قبض</th><th>خالص</th><th>سالن</th><th>مرغ</th><th>مبلغ</th></tr>${a.map(r=>`<tr><td>${r.date}</td><td>${r.bill}</td><td>${(r.net||0).toLocaleString("fa-IR")}</td><td>${r.salon}</td><td>${(r.birds||0).toLocaleString("fa-IR")}</td><td>${(r.amount||0).toLocaleString("fa-IR")}</td></tr>`).join("")}</table></div>`:"هنوز فروش مرغی ثبت نشده است.";
-}
-function render(){fillPeriods();nav.innerHTML=tabs.map(x=>`<button class="${x[0]==tab?"on":""}" onclick="tab='${x[0]}';render()">${x[1]}</button>`).join("");let p={
-home:`<div class="grid">
-<div class="panel kpi">موجودی کل گله<b>۴۵٬۶۸۰</b>قطعه</div>
-<div class="panel kpi">تلفات کل<b>۲٬۳۲۰</b>۵٪</div>
-<div class="panel kpi">تلفات هفته اول<b>۱٫۸٪</b>هفته اول</div>
-<div class="panel kpi">دان مصرفی کل<b>۰</b>کیلو</div>
-<div class="panel kpi">فروش مرغ<b>۱۸٬۷۵۰</b>کیلو</div>
-<div class="panel kpi">فروش کود<b>۳٬۲۰۰</b>کیلو</div>
-<div class="panel kpi">سود/زیان<b>۱٬۲۵۰٬۰۰۰٬۰۰۰</b>ریال</div>
-</div><div class="panel"><h2 style="text-align:center">درصد بقا</h2><div class="ring"><div>۹۵٪<small>بقا</small></div></div></div><div class="panel"><h2>۴ سالن</h2><div class="grid">${[1,2,3,4].map(i=>`<div class="panel"><b>سالن ${i}</b><p>جوجه: ۱۲٬۰۰۰</p><p>تلفات: ۱٫۲٪</p><p>موجودی: ۱۱٬۸۰۰</p></div>`).join("")}</div></div><div class="panel"><h2>🧩 امکانات نسخه نهایی</h2><div class="row"><span class="pill">☁️ دیتابیس آنلاین</span><span class="pill">🔐 OTP + Face ID</span><span class="pill">📗 Excel</span><span class="pill">📄 PDF</span><span class="pill">✏️ ویرایش / حذف</span><span class="pill">📅 دوره‌های مستقل</span></div></div><div class="panel"><h2>🐔 تلفات هفته اول</h2><p>داشبورد باید تلفات تجمعی روزهای ۱ تا ۷ را جداگانه نشان دهد و درصد تلفات هفته اول را از جوجه‌ریزی همان دوره محاسبه کند.</p></div><div class="panel"><h2>نمودارها</h2><div class="row"><span class="pill">📈 تلفات روزانه/هفتگی</span><span class="pill">🌾 دان روزانه/هفتگی</span><span class="pill">⚖️ تناژ بارگیری</span><span class="pill">💰 هزینه روزانه</span></div></div><div class="panel"><h2>🌤️ هواشناسی آنلاین</h2><p><b>کاشمر، استان خراسان رضوی</b></p><p>در نسخه عملیاتی، دما، وضعیت هوا، رطوبت، سرعت باد و پیش‌بینی روزانه از سرویس آنلاین هواشناسی برای همین موقعیت دریافت می‌شود.</p></div>`,
-flock:`<div class="panel"><h2>گله و تلفات</h2><p>۴ سالن • جوجه‌ریزی • تلفات اولیه مسیر • تلفات روزانه • موجودی لحظه‌ای • درصد روزانه و کل • روز گله</p><button class="primary">➕ ثبت تلفات</button></div>`,
-feed:`<div class="panel"><h2>دان و انبار</h2><p>آغازین، پیش‌دان، میان‌دان، پس‌دان، ذرت، سویا، کنسانتره، روغن، صدف جوش، شیرین، نمک، ضدککسیدیوز و توکسین‌بایندر؛ برند، تناژ، فی ریال و موجودی.</p></div>`,
-sales:`<div class="panel"><h2>💰 ثبت فروش مرغ</h2>
-<div class="grid">
-<div><label>تاریخ</label><input id="chDate" value="1405/05/21"></div>
-<div><label>شماره قبض</label><input id="chBill"></div>
-<div><label>وزن خالی ماشین (کیلو)</label><input id="chEmpty" type="number"></div>
-<div><label>وزن پر ماشین (کیلو)</label><input id="chFull" type="number"></div>
-<div><label>نوع خودرو</label><input id="chVehicle"></div>
-<div><label>پلاک</label><input id="chPlate"></div>
-<div><label>راننده</label><input id="chDriver"></div>
-<div><label>شماره تماس راننده</label><input id="chPhone"></div>
-<div><label>مقصد</label><input id="chDest"></div>
-<div><label>خریدار</label><input id="chBuyer"></div>
-<div><label>شماره سالن</label><select id="chSalon"><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
-<div><label>تعداد مرغ</label><input id="chBirds" type="number"></div>
-<div><label>مبلغ فروش (ریال)</label><input id="chAmount" type="number"></div>
-</div><br><button class="primary" onclick="saveChickenSale()">➕ ثبت فروش مرغ</button></div>
-<div class="panel"><h2>📋 فروش‌های ثبت‌شده</h2><div id="chickenSalesTable"></div></div>
-<div class="panel"><div class="grid"><div><b>مقدار فروش مرغ</b><h2 id="chTotal">۰ کیلو</h2></div><div><b>تناژ کل بارگیری</b><h2 id="chTonnage">۰ تن</h2></div></div></div>
-<div class="panel"><h2>🌾 فروش کود</h2><p>ثبت تاریخ، مقدار کود، وزن/تناژ، خریدار، قیمت، مبلغ کل، شماره قبض و توضیحات.</p><div class="grid"><div><b>مقدار فروش کود</b><h2>۳٬۲۰۰ کیلو</h2></div><div><b>تناژ کود</b><h2>۳٫۲ تن</h2></div></div><button class="primary" onclick="alert("فرم ثبت فروش کود در نسخه عملیاتی متصل می‌شود.")">➕ ثبت فروش کود</button></div>`,
-finance:`<div class="panel"><h2>💰 مالی</h2><p>هزینه‌ها و دریافتی‌ها، همه به ریال؛ تفکیک شریک و بازه زمانی.</p></div>`,
-partners:`<div class="panel"><h2>👥 شرکا</h2><p>شرکای نامحدود، نام واقعی، آورده اولیه، آورده بعدی، برداشت، هزینه پرداختی و سهم هر شریک.</p></div>`,
-reports:`<div class="panel"><h2>📊 گزارش‌ساز حرفه‌ای</h2>
-<p>گزارش‌ها بر اساس دوره فعال تهیه می‌شوند. فیلترهای تاریخ، سالن، شریک و نوع گزارش در مرحله اتصال دیتابیس فعال می‌شوند.</p>
-<div class="row"><button class="secondary" onclick="alert("در نسخه نهایی: خروجی Excel")">📗 Excel</button>
-<button class="secondary" onclick="window.print()">📄 PDF / چاپ</button></div></div>
-<div class="panel"><h2>☁️ وضعیت اطلاعات</h2>
-<p>این فایل برای بررسی نهایی رابط کاربری است و اطلاعات را روی دستگاه نگه می‌دارد. برای استفاده واقعی روی چند دستگاه، مرحله بعد باید به Cloud Database و احراز هویت متصل شود.</p></div>`};main.innerHTML=p[tab];renderChickenSales()}
-render()
-</script></body></html>
+<main id="app" class="wrap hidden">
+<div class="box" style="display:flex;justify-content:space-between;align-items:center">
+<div><h1>🐔 سپید گوشت</h1><span class="muted">مدیریت حرفه‌ای فارم</span></div>
+<div><span id="today"></span> <button class="btn" onclick="logout()">خروج</button></div>
+</div>
+<div id="nav" class="nav"></div>
+<section id="view"></section>
+<div class="about">Sepid Goosht Poultry Management | Version 1.0.0 | Developed by Naser Jafarzadeh | © 2026 Naser Jafarzadeh</div>
+</main>
+
+<script>
+const KEY="sepid_goosht_v1";
+let db=JSON.parse(localStorage.getItem(KEY)||"null")||{flock:[],stockIn:[],stockOut:[],sales:[],expenses:[],partners:[],receipts:[]};
+const pages=[
+["dash","🏠 داشبورد"],["flock","🐔 گله و تلفات"],["stock","🌾 انبار و دان"],["sales","🚚 فروش"],
+["finance","💰 مالی"],["partners","👥 شرکا"],["receipts","💳 دریافتی‌ها"],["reports","📊 گزارش‌ها"],["about","ℹ️ About"]
+];
+function save(){localStorage.setItem(KEY,JSON.stringify(db));render()}
+function today(){return new Intl.DateTimeFormat("fa-IR-u-ca-persian",{year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date())}
+function money(x){return (+x||0).toLocaleString("fa-IR")+" ریال"}
+function uid(){return Date.now()+Math.random()}
+function sendCode(){if(!phone.value)return alert("شماره موبایل را وارد کنید");phoneStep.classList.add("hidden");codeStep.classList.remove("hidden")}
+function enterApp(){if(otp.value!=="123456")return alert("کد صحیح نیست");localStorage.setItem("sepid_login","1");location.reload()}
+function logout(){localStorage.removeItem("sepid_login");location.reload()}
+function nav(active){navEl=document.getElementById("nav");navEl.innerHTML=pages.map(p=>`<button class="${p[0]==active?"active":""}" onclick="show('${p[0]}')">${p[1]}</button>`).join("")}
+function field(id,label,type="text"){return `<div><label>${label}</label><input id="${id}" type="${type}"></div>`}
+function edit(arr,id){let x=db[arr].find(v=>String(v.id)==String(id));if(!x)return;Object.keys(x).filter(k=>k!="id").forEach(k=>{let v=prompt(k,x[k]);if(v!==null)x[k]=v});save()}
+function del(arr,id){if(confirm("این رکورد حذف شود؟")){db[arr]=db[arr].filter(x=>String(x.id)!=String(id));save()}}
+function tbl(arr,heads,cols){let a=db[arr];if(!a.length)return '<p class="muted">رکوردی ثبت نشده است.</p>';return `<div class="scroll"><table class="table"><tr>${heads.map(h=>`<th>${h}</th>`).join("")}<th>عملیات</th></tr>${a.map(x=>`<tr>${cols.map(c=>`<td>${x[c]??""}</td>`).join("")}<td class="actions"><button class="btn" onclick="edit('${arr}','${x.id}')">ویرایش</button><button class="btn danger" onclick="del('${arr}','${x.id}')">حذف</button></td></tr>`).join("")}</table></div>`}
+function show(p){nav(p);let f={dash,dashboard:dash,flock,stock,sales,finance,partners,receipts,reports,about}[p]||dash;view.innerHTML=f()}
+function dash(){
+let initial=db.flock.reduce((s,x)=>s+(+x.initial||0),0),mort=db.flock.reduce((s,x)=>s+(+x.mort||0)+(+x.initialMort||0),0),live=Math.max(0,initial-mort);
+let feed=db.flock.reduce((s,x)=>s+(+x.feed||0),0),sale=db.sales.reduce((s,x)=>s+(+x.amount||0),0),cost=db.expenses.reduce((s,x)=>s+(+x.amount||0),0);
+return `<div class="box"><h2>امروز ${today()} 🌱</h2><p class="muted">صبح بخیر؛ خلاصه وضعیت فارم سپید گوشت</p></div>
+<div class="grid">${[["موجودی کل گله",live+" قطعه"],["جمع کل تلفات",mort+" قطعه"],["درصد بقا",initial?(live/initial*100).toFixed(1)+"%":"0%"],["دان مصرفی کل",(feed/1000).toFixed(2)+" تن"],["فروش کل",money(sale)],["هزینه کل",money(cost)],["ضریب کل مرغداری",fcr().toFixed(3)]].map(a=>`<div class="box"><div class="label">${a[0]}</div><div class="metric">${a[1]}</div></div>`).join("")}</div>
+<div class="box"><h3>ضریب ۴ سالن</h3><div class="grid">${[1,2,3,4].map(h=>`<div><b>سالن ${h}</b><div class="metric">${hallFcr(h).toFixed(3)}</div></div>`).join("")}</div></div>`}
+function fcr(){let feed=db.flock.reduce((s,x)=>s+(+x.feed||0),0),gain=db.flock.reduce((s,x)=>s+(+x.chicks||0)*(+x.weight||0),0);return gain?feed/gain:0}
+function hallFcr(h){let a=db.flock.filter(x=>x.hall=="سالن "+h),feed=a.reduce((s,x)=>s+(+x.feed||0),0),gain=a.reduce((s,x)=>s+(+x.chicks||0)*(+x.weight||0),0);return gain?feed/gain:0}
+function flock(){return `<div class="box"><h2>گله و تلفات</h2><div class="form">
+${field("fd","تاریخ شمسی")}${field("hall","سالن")}${field("initial","تعداد جوجه اولیه","number")}${field("initialMort","تلفات اولیه مسیر","number")}
+${field("chicks","موجودی سالن","number")}${field("weight","میانگین وزن kg","number")}${field("mort","تلفات روزانه","number")}${field("feed","دان مصرفی kg","number")}${field("day","روز دوره","number")}${field("med","دارو / واکسن")}${field("medq","مقدار","number")}</div>
+<button class="btn primary" style="margin-top:10px" onclick="addFlock()">ثبت</button></div>
+<div class="box"><h3>سوابق تلفات، وزن و مصرف دان</h3>${tbl("flock",["تاریخ","سالن","وزن","تلفات","دان","روز"],["fd","hall","weight","mort","feed","day"])}</div>`}
+function addFlock(){db.flock.push({id:uid(),fd:fd.value||today(),hall:hall.value||"سالن 1",initial:+initial.value||0,initialMort:+initialMort.value||0,chicks:+chicks.value||0,weight:+weight.value||0,mort:+mort.value||0,feed:+feed.value||0,day:+day.value||0,med:med.value,medq:+medq.value||0});save()}
+function stock(){let names=[...new Set(db.stockIn.map(x=>x.item))];return `<div class="box"><h2>انبار و دان</h2><h3>ورود به انبار</h3><div class="form">${field("si","نوع کالا")}${field("sb","برند")}${field("sq","وزن kg","number")}${field("sp","قیمت ریال","number")}${field("sd","تاریخ شمسی")}</div><button class="btn primary" style="margin-top:10px" onclick="addIn()">ثبت ورود</button>
+<h3>مصرف از انبار</h3><div class="form">${field("so","نوع کالا")}${field("oq","مقدار مصرف kg","number")}${field("od","تاریخ شمسی")}</div><button class="btn primary" style="margin-top:10px" onclick="addOut()">ثبت مصرف</button></div>
+<div class="grid">${names.map(n=>{let i=db.stockIn.filter(x=>x.item==n).reduce((s,x)=>s+(+x.qty||0),0),o=db.stockOut.filter(x=>x.item==n).reduce((s,x)=>s+(+x.qty||0),0);return `<div class="box"><div class="label">${n}</div><div class="metric">${(i-o).toLocaleString("fa-IR")} kg</div><div class="muted">مجموع مصرفی: ${o.toLocaleString("fa-IR")} kg</div></div>`}).join("")}</div>
+<div class="box"><h3>ورودی‌های انبار</h3>${tbl("stockIn",["نوع کالا","برند","وزن","قیمت","تاریخ"],["item","brand","qty","price","date"])}</div>
+<div class="box"><h3>مصرفی‌ها</h3>${tbl("stockOut",["نوع کالا","مقدار","تاریخ"],["item","qty","date"])}</div>`}
+function addIn(){db.stockIn.push({id:uid(),item:si.value,brand:sb.value,qty:+sq.value||0,price:+sp.value||0,date:sd.value||today()});save()}
+function addOut(){db.stockOut.push({id:uid(),item:so.value,qty:+oq.value||0,date:od.value||today()});save()}
+function sales(){return `<div class="box"><h2>فروش</h2><div class="form">${field("st","نوع فروش (مرغ زنده / کود)")}${field("sdate","تاریخ شمسی")}${field("ticket","شماره قبض")}${field("empty","وزن خالی kg","number")}${field("full","وزن پر kg","number")}${field("vehicle","نوع خودرو")}${field("plate","پلاک")}${field("driver","راننده")}${field("dphone","تماس راننده")}${field("dest","مقصد")}${field("buyer","خریدار")}${field("hallS","شماره سالن")}${field("cage","شماره قفس")}${field("cageN","تعداد در قفس","number")}${field("birds","تعداد مرغ","number")}${field("amount","مبلغ ریال","number")}</div><button class="btn primary" style="margin-top:10px" onclick="addSale()">ثبت فروش</button></div>
+<div class="box">${tbl("sales",["نوع","تاریخ","قبض","خالص kg","خریدار","تعداد","مبلغ"],["st","sdate","ticket","net","buyer","birds","amount"])}</div>`}
+function addSale(){db.sales.push({id:uid(),st:st.value,sdate:sdate.value||today(),ticket:ticket.value,net:(+full.value||0)-(+empty.value||0),buyer:buyer.value,birds:+birds.value||0,amount:+amount.value||0,empty:+empty.value||0,full:+full.value||0,vehicle:vehicle.value,plate:plate.value,driver:driver.value,dphone:dphone.value,dest:dest.value,hall:hallS.value,cage:cage.value,cageN:+cageN.value||0});save()}
+function finance(){return `<div class="box"><h2>مالی و هزینه‌ها</h2><div class="form">${field("et","عنوان هزینه")}${field("ec","دسته")}${field("ea","مبلغ ریال","number")}${field("ep","شریک")}${field("ed","تاریخ شمسی")}</div><button class="btn primary" style="margin-top:10px" onclick="addExp()">ثبت هزینه</button></div><div class="box">${tbl("expenses",["عنوان","دسته","مبلغ","شریک","تاریخ"],["title","cat","amount","partner","date"])}</div>`}
+function addExp(){db.expenses.push({id:uid(),title:et.value,cat:ec.value,amount:+ea.value||0,partner:ep.value,date:ed.value||today()});save()}
+function partners(){return `<div class="box"><h2>شرکا</h2><div class="form">${field("pn","نام شریک")}${field("pp","شماره تماس")}${field("pc","آورده اولیه ریال","number")}</div><button class="btn primary" style="margin-top:10px" onclick="addP()">ثبت شریک</button></div><div class="box">${tbl("partners",["نام","تماس","آورده اولیه"],["name","phone","capital"])}</div>`}
+function addP(){db.partners.push({id:uid(),name:pn.value,phone:pp.value,capital:+pc.value||0});save()}
+function receipts(){return `<div class="box"><h2>دریافتی‌ها</h2><div class="form">${field("rp","شریک")}${field("rf","دریافت از")}${field("ra","مبلغ ریال","number")}${field("rd","تاریخ شمسی")}${field("rn","توضیحات")}</div><button class="btn primary" style="margin-top:10px" onclick="addR()">ثبت دریافتی</button></div><div class="box">${tbl("receipts",["شریک","از","مبلغ","تاریخ","توضیحات"],["partner","from","amount","date","note"])}</div>`}
+function addR(){db.receipts.push({id:uid(),partner:rp.value,from:rf.value,amount:+ra.value||0,date:rd.value||today(),note:rn.value});save()}
+function reports(){let total=db.expenses.reduce((s,x)=>s+(+x.amount||0),0);return `<div class="grid"><div class="box"><div class="label">جمع هزینه</div><div class="metric">${money(total)}</div></div><div class="box"><div class="label">جمع فروش</div><div class="metric">${money(db.sales.reduce((s,x)=>s+(+x.amount||0),0))}</div></div></div><div class="box"><h3>هزینه هر شریک</h3>${db.partners.map(p=>`<p>${p.name}: <b>${money(db.expenses.filter(e=>e.partner==p.name).reduce((s,x)=>s+(+x.amount||0),0))}</b></p>`).join("")}</div><button class="btn primary" onclick="window.print()">خروجی PDF / چاپ</button>`}
+function about(){return `<div class="box" style="text-align:center;padding:45px"><h1>Sepid Goosht Poultry Management</h1><p class="muted">Professional Poultry Farm Management System</p><p><b>Version 1.0.0</b></p><p>Developed by <b>Naser Jafarzadeh</b></p><p>© 2026 Naser Jafarzadeh</p></div>`}
+function render(){todayEl=document.getElementById("today");todayEl.textContent=today();show("dash")}
+if(localStorage.getItem("sepid_login")=="1"){login.classList.add("hidden");app.classList.remove("hidden")}
+render();
+</script>
+</body></html>
