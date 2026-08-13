@@ -20,10 +20,6 @@ input,select{width:100%;padding:10px;border-radius:9px;border:1px solid #1d3a35;
 </style>
 </head>
 <body>
-<div id="login" class="hidden"><div class="loginbox"><h1>🐔 سپید گوشت</h1><p class="muted">سامانه مدیریت مرغداری</p>
-<div id="phoneStep"><label>شماره موبایل</label><input id="phone" inputmode="tel" placeholder="09xxxxxxxxx"><button class="btn primary" style="width:100%;margin-top:10px" onclick="sendCode()">دریافت کد پیامکی</button></div>
-<div id="codeStep" class="hidden"><label>کد تأیید</label><input id="otp" inputmode="numeric"><button class="btn primary" style="width:100%;margin-top:10px" onclick="enterApp()">ورود</button><p class="muted">نسخه آزمایشی: ارسال SMS غیرفعال است و ورود بدون کد انجام می‌شود.</p></div></div></div>
-
 <main id="app" class="wrap">
 <div class="box" style="display:flex;justify-content:space-between;align-items:center">
 <div><h1>🐔 سپید گوشت</h1><span class="muted">مدیریت حرفه‌ای فارم</span></div>
@@ -35,7 +31,7 @@ input,select{width:100%;padding:10px;border-radius:9px;border:1px solid #1d3a35;
 </div>
 <div id="nav" class="nav"></div>
 <section id="view"></section>
-<div class="about">Sepid Goosht Poultry Management | Version 1.2.0 | Developed by Naser Jafarzadeh | © 2026 Naser Jafarzadeh</div>
+<div class="about">Sepid Goosht Poultry Management | Version 1.2.1 | Developed by Naser Jafarzadeh | © 2026 Naser Jafarzadeh</div>
 </main>
 
 <script>
@@ -49,23 +45,6 @@ function save(){localStorage.setItem(KEY,JSON.stringify(db));render()}
 function today(){return new Intl.DateTimeFormat("fa-IR-u-ca-persian",{year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date())}
 function money(x){return (+x||0).toLocaleString("fa-IR")+" ریال"}
 function uid(){return Date.now()+Math.random()}
-function sendCode(){
-  const p=(phone.value||"").trim();
-  if(!p) return alert("شماره موبایل را وارد کنید");
-  localStorage.setItem("sepid_phone",p);
-  phoneStep.classList.add("hidden");
-  codeStep.classList.remove("hidden");
-  document.getElementById("otp").value="";
-  alert("برای این نسخه آزمایشی، نیازی به دریافت پیامک نیست. فقط روی «ورود» بزنید.");
-}
-function enterApp(){
-  const p=(phone.value||localStorage.getItem("sepid_phone")||"").trim();
-  if(!p) return alert("شماره موبایل را وارد کنید");
-  localStorage.setItem("sepid_phone",p);
-  localStorage.setItem("sepid_login","1");
-  location.reload();
-}
-function logout(){localStorage.removeItem("sepid_login");location.reload()}
 function nav(active){navEl=document.getElementById("nav");navEl.innerHTML=pages.map(p=>`<button class="${p[0]==active?"active":""}" onclick="show('${p[0]}')">${p[1]}</button>`).join("")}
 function field(id,label,type="text"){return `<div><label>${label}</label><input id="${id}" type="${type}"></div>`}
 function edit(arr,id){let x=db[arr].find(v=>String(v.id)==String(id));if(!x)return;Object.keys(x).filter(k=>k!="id").forEach(k=>{let v=prompt(k,x[k]);if(v!==null)x[k]=v});save()}
@@ -103,7 +82,7 @@ function addP(){db.partners.push({id:uid(),name:pn.value,phone:pp.value,capital:
 function receipts(){return `<div class="box"><h2>دریافتی‌ها</h2><div class="form">${field("rp","شریک")}${field("rf","دریافت از")}${field("ra","مبلغ ریال","number")}${field("rd","تاریخ شمسی")}${field("rn","توضیحات")}</div><button class="btn primary" style="margin-top:10px" onclick="addR()">ثبت دریافتی</button></div><div class="box">${tbl("receipts",["شریک","از","مبلغ","تاریخ","توضیحات"],["partner","from","amount","date","note"])}</div>`}
 function addR(){db.receipts.push({id:uid(),partner:rp.value,from:rf.value,amount:+ra.value||0,date:rd.value||today(),note:rn.value});save()}
 function reports(){let total=db.expenses.reduce((s,x)=>s+(+x.amount||0),0);return `<div class="grid"><div class="box"><div class="label">جمع هزینه</div><div class="metric">${money(total)}</div></div><div class="box"><div class="label">جمع فروش</div><div class="metric">${money(db.sales.reduce((s,x)=>s+(+x.amount||0),0))}</div></div></div><div class="box"><h3>هزینه هر شریک</h3>${db.partners.map(p=>`<p>${p.name}: <b>${money(db.expenses.filter(e=>e.partner==p.name).reduce((s,x)=>s+(+x.amount||0),0))}</b></p>`).join("")}</div><button class="btn primary" onclick="window.print()">خروجی PDF / چاپ</button>`}
-function about(){return `<div class="box" style="text-align:center;padding:45px"><h1>Sepid Goosht Poultry Management</h1><p class="muted">Professional Poultry Farm Management System</p><p><b>Version 1.2.0</b></p><p>Developed by <b>Naser Jafarzadeh</b></p><p>© 2026 Naser Jafarzadeh</p></div>`}
+function about(){return `<div class="box" style="text-align:center;padding:45px"><h1>Sepid Goosht Poultry Management</h1><p class="muted">Professional Poultry Farm Management System</p><p><b>Version 1.2.1</b></p><p>Developed by <b>Naser Jafarzadeh</b></p><p>© 2026 Naser Jafarzadeh</p></div>`}
 
 function backupData(){
   try{
@@ -153,7 +132,6 @@ function restoreData(ev){
   reader.readAsText(file);
 }
 function render(){todayEl=document.getElementById("today");todayEl.textContent=today();show("dash")}
-if(localStorage.getItem("sepid_login")=="1"){login.classList.add("hidden");app.classList.remove("hidden")}
 render();
 </script>
 </body></html>
