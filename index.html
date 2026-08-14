@@ -36,7 +36,7 @@ input,select{width:100%;padding:10px;border-radius:9px;border:1px solid #1d3a35;
 </div>
 <div id="nav" class="nav"></div>
 <section id="view"></section>
-<div class="about">Sepid Goosht Poultry Management | Version 1.3.0 | Developed by Naser Jafarzadeh | © 2026 Naser Jafarzadeh</div>
+<div class="about">Sepid Goosht Poultry Management | Version 1.4.0 | Developed by Naser Jafarzadeh | © 2026 Naser Jafarzadeh</div>
 </main>
 
 <script>
@@ -87,7 +87,7 @@ function addP(){db.partners.push({id:uid(),name:pn.value,phone:pp.value,capital:
 function receipts(){return `<div class="box"><h2>دریافتی‌ها</h2><div class="form">${field("rp","شریک")}${field("rf","دریافت از")}${field("ra","مبلغ ریال","number")}${field("rd","تاریخ شمسی")}${field("rn","توضیحات")}</div><button class="btn primary" style="margin-top:10px" onclick="addR()">ثبت دریافتی</button></div><div class="box">${tbl("receipts",["شریک","از","مبلغ","تاریخ","توضیحات"],["partner","from","amount","date","note"])}</div>`}
 function addR(){db.receipts.push({id:uid(),partner:rp.value,from:rf.value,amount:+ra.value||0,date:rd.value||today(),note:rn.value});save()}
 function reports(){let total=db.expenses.reduce((s,x)=>s+(+x.amount||0),0);return `<div class="grid"><div class="box"><div class="label">جمع هزینه</div><div class="metric">${money(total)}</div></div><div class="box"><div class="label">جمع فروش</div><div class="metric">${money(db.sales.reduce((s,x)=>s+(+x.amount||0),0))}</div></div></div><div class="box"><h3>هزینه هر شریک</h3>${db.partners.map(p=>`<p>${p.name}: <b>${money(db.expenses.filter(e=>e.partner==p.name).reduce((s,x)=>s+(+x.amount||0),0))}</b></p>`).join("")}</div><button class="btn primary" onclick="window.print()">خروجی PDF / چاپ</button>`}
-function about(){return `<div class="box" style="text-align:center;padding:45px"><h1>Sepid Goosht Poultry Management</h1><p class="muted">Professional Poultry Farm Management System</p><p><b>Version 1.3.0</b></p><p>Developed by <b>Naser Jafarzadeh</b></p><p>© 2026 Naser Jafarzadeh</p></div>`}
+function about(){return `<div class="box" style="text-align:center;padding:45px"><h1>Sepid Goosht Poultry Management</h1><p class="muted">Professional Poultry Farm Management System</p><p><b>Version 1.4.0</b></p><p>Developed by <b>Naser Jafarzadeh</b></p><p>© 2026 Naser Jafarzadeh</p></div>`}
 
 function backupData(){
   try{
@@ -137,6 +137,7 @@ function restoreData(ev){
   reader.readAsText(file);
 }
 function render(){todayEl=document.getElementById("today");todayEl.textContent=today();show("dash")}
+populatePeriods();
 render();
 </script>
 
@@ -185,16 +186,49 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 <script>
 function createNewPeriod(){
-  const name=prompt("نام دوره جدید را وارد کنید:");
-  if(!name) return;
+  const old=document.getElementById("newPeriodModal");
+  if(old) old.remove();
+  const m=document.createElement("div");
+  m.id="newPeriodModal"; m.className="jalali-modal"; m.style.display="flex";
+  m.innerHTML='<div class="jalali-box" style="max-height:90vh;overflow:auto"><h3>➕ ایجاد دوره جدید</h3>'+
+  '<label>نام دوره</label><input id="npName" placeholder="مثلاً دوره ۱۴۰۵/۰۵">'+
+  '<label>تاریخ جوجه‌ریزی شمسی</label><input id="npDate" placeholder="مثلاً ۱۴۰۵/۰۵/۲۳">'+
+  '<p class="muted">تعداد ورودی، تلفات مسیر و وزن اولیه هر سالن را وارد کنید.</p>'+
+  [1,2,3,4].map(i=>'<div style="border:1px solid #394454;border-radius:12px;padding:10px;margin:8px 0"><b>سالن '+i+'</b>'+
+  '<input id="npHall'+i+'" type="number" min="0" placeholder="تعداد جوجه ورودی">'+
+  '<input id="npLoss'+i+'" type="number" min="0" placeholder="تلفات مسیر">'+
+  '<input id="npWeight'+i+'" type="number" min="0" step="0.001" placeholder="میانگین وزن اولیه (اختیاری)"></div>').join("")+
+  '<div class="jalali-actions"><button onclick="document.getElementById(\'newPeriodModal\').remove()">انصراف</button>'+
+  '<button onclick="saveNewPeriod()" class="btn primary">ثبت دوره</button></div></div>';
+  document.body.appendChild(m);
+}
+function saveNewPeriod(){
+  const name=document.getElementById("npName").value.trim();
+  const date=document.getElementById("npDate").value.trim();
+  if(!name){alert("نام دوره را وارد کنید");return;}
+  if(!/^14\d{2}\/(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])$/.test(date)){alert("تاریخ را به شکل ۱۴۰۵/۰۵/۲۳ وارد کنید");return;}
   const periods=JSON.parse(localStorage.getItem("sepid_periods")||"[]");
-  const id=Date.now().toString();
-  periods.push({id,name,createdAt:new Date().toISOString(),weeklyWeights:[],records:[]});
+  const id=Date.now().toString(), halls=[];
+  for(let i=1;i<=4;i++){
+    const initial=Number(document.getElementById("npHall"+i).value||0);
+    const loss=Number(document.getElementById("npLoss"+i).value||0);
+    const weight=Number(document.getElementById("npWeight"+i).value||0);
+    halls.push({hall:i,initial,routeMortality:loss,current:Math.max(0,initial-loss),initialWeight:weight,entryDate:date});
+  }
+  periods.push({id,name,startDate:date,createdAt:new Date().toISOString(),halls,weeklyWeights:[],records:[]});
   localStorage.setItem("sepid_periods",JSON.stringify(periods));
   localStorage.setItem("sepid_active_period",id);
-  alert("دوره جدید ایجاد شد.");
+  document.getElementById("newPeriodModal").remove();
+  alert("دوره جدید با موجودی اولیه ۴ سالن ثبت شد.");
   location.reload();
 }
+function populatePeriods(){
+  const sel=document.getElementById("periodSelect"); if(!sel)return;
+  const periods=JSON.parse(localStorage.getItem("sepid_periods")||"[]");
+  const active=localStorage.getItem("sepid_active_period")||"";
+  sel.innerHTML='<option value="">انتخاب دوره</option>'+periods.map(p=>'<option value="'+p.id+'" '+(p.id===active?'selected':'')+'>'+p.name+'</option>').join("");
+}
+
 function switchPeriod(id){
   if(!id)return;
   localStorage.setItem("sepid_active_period",id);
