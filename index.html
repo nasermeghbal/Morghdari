@@ -36,7 +36,7 @@ input,select{width:100%;padding:10px;border-radius:9px;border:1px solid #1d3a35;
 </div>
 <div id="nav" class="nav"></div>
 <section id="view"></section>
-<div class="about">Sepid Goosht Poultry Management | Version 1.5.0 | Developed by Naser Jafarzadeh | © 2026 Naser Jafarzadeh</div>
+<div class="about">Sepid Goosht Poultry Management | Version 1.5.1 | Developed by Naser Jafarzadeh | © 2026 Naser Jafarzadeh</div>
 </main>
 
 <script>
@@ -87,7 +87,7 @@ function addP(){db.partners.push({id:uid(),name:pn.value,phone:pp.value,capital:
 function receipts(){return `<div class="box"><h2>دریافتی‌ها</h2><div class="form">${field("rp","شریک")}${field("rf","دریافت از")}${field("ra","مبلغ ریال","number")}${field("rd","تاریخ شمسی")}${field("rn","توضیحات")}</div><button class="btn primary" style="margin-top:10px" onclick="addR()">ثبت دریافتی</button></div><div class="box">${tbl("receipts",["شریک","از","مبلغ","تاریخ","توضیحات"],["partner","from","amount","date","note"])}</div>`}
 function addR(){db.receipts.push({id:uid(),partner:rp.value,from:rf.value,amount:+ra.value||0,date:rd.value||today(),note:rn.value});save()}
 function reports(){let total=db.expenses.reduce((s,x)=>s+(+x.amount||0),0);return `<div class="grid"><div class="box"><div class="label">جمع هزینه</div><div class="metric">${money(total)}</div></div><div class="box"><div class="label">جمع فروش</div><div class="metric">${money(db.sales.reduce((s,x)=>s+(+x.amount||0),0))}</div></div></div><div class="box"><h3>هزینه هر شریک</h3>${db.partners.map(p=>`<p>${p.name}: <b>${money(db.expenses.filter(e=>e.partner==p.name).reduce((s,x)=>s+(+x.amount||0),0))}</b></p>`).join("")}</div><button class="btn primary" onclick="window.print()">خروجی PDF / چاپ</button>`}
-function about(){return `<div class="box" style="text-align:center;padding:45px"><h1>Sepid Goosht Poultry Management</h1><p class="muted">Professional Poultry Farm Management System</p><p><b>Version 1.5.0</b></p><p>Developed by <b>Naser Jafarzadeh</b></p><p>© 2026 Naser Jafarzadeh</p></div>`}
+function about(){return `<div class="box" style="text-align:center;padding:45px"><h1>Sepid Goosht Poultry Management</h1><p class="muted">Professional Poultry Farm Management System</p><p><b>Version 1.5.1</b></p><p>Developed by <b>Naser Jafarzadeh</b></p><p>© 2026 Naser Jafarzadeh</p></div>`}
 
 function backupData(){
   try{
@@ -187,52 +187,6 @@ if(!/^14\d{2}\/(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])$/.test(date)){alert("تا�
   alert("دوره جدید با موجودی اولیه ۴ سالن ثبت شد.");
   location.reload();
 }
-function populatePeriods(){
-  const sel=document.getElementById("periodSelect"); if(!sel)return;
-  const periods=JSON.parse(localStorage.getItem("sepid_periods")||"[]");
-  const active=localStorage.getItem("sepid_active_period")||"";
-  sel.innerHTML='<option value="">انتخاب دوره</option>'+periods.map(p=>'<option value="'+p.id+'" '+(p.id===active?'selected':'')+'>'+p.name+'</option>').join("");
-}
-
-function switchPeriod(id){
-  if(!id)return;
-  localStorage.setItem("sepid_active_period",id);
-  location.reload();
-}
-function addWeeklyWeight(hall, week, weight){
-  const id=localStorage.getItem("sepid_active_period");
-  const periods=JSON.parse(localStorage.getItem("sepid_periods")||"[]");
-  const p=periods.find(x=>x.id===id);
-  if(!p)return;
-  p.weeklyWeights=p.weeklyWeights||[];
-  const i=p.weeklyWeights.findIndex(x=>x.hall===hall&&x.week===week);
-  const row={hall:Number(hall),week:Number(week),weight:Number(weight),date:new Date().toISOString()};
-  if(i>=0)p.weeklyWeights[i]=row; else p.weeklyWeights.push(row);
-  localStorage.setItem("sepid_periods",JSON.stringify(periods));
-}
-function updateSaleTypeOptions(){
-  document.querySelectorAll('select[data-sale-type]').forEach(sel=>{
-    if(!sel.options.length){
-      sel.innerHTML='<option value="مرغ زنده">مرغ زنده</option><option value="کود">کود</option>';
-    }
-  });
-}
-function updateCageLabels(){
-  document.querySelectorAll('[data-cage-number-label]').forEach(x=>x.textContent='تعداد قفس');
-}
-function firstWeekMortality(){
-  const rows=(window.db&&Array.isArray(db.flock))?db.flock:[];
-  return rows.filter(r=>{
-    const d=Number(r.age||r.day||r.week||0);
-    return d<=7;
-  }).reduce((a,r)=>a+Number(r.mortality||r.loss||r.dead||0),0);
-}
-function totalMortalityPercent(){
-  const rows=(window.db&&Array.isArray(db.flock))?db.flock:[];
-  const total=rows.reduce((a,r)=>a+Number(r.mortality||r.loss||r.dead||0),0);
-  const initial=rows.reduce((a,r)=>a+Number(r.initial||r.count||r.population||0),0);
-  return initial?((total/initial)*100):0;
-}
 </script>
 
 
@@ -282,5 +236,74 @@ function openJalaliPicker(el){
 function pcalClose(){document.getElementById("persianCalendarModal").style.display="none";pcalTarget=null}
 function pcalPrev(){if(--pcalMonth<1){pcalMonth=12;pcalYear--}pcalRender()}
 function pcalNext(){if(++pcalMonth>12){pcalMonth=1;pcalYear++}pcalRender()}
+
+function createNewPeriod(){
+  var old=document.getElementById("newPeriodModal");
+  if(old) old.remove();
+  var m=document.createElement("div");
+  m.id="newPeriodModal";m.className="jalali-modal";m.style.display="flex";
+  var box=document.createElement("div");
+  box.className="jalali-box";box.style.maxHeight="90vh";box.style.overflow="auto";
+  var h=document.createElement("h3");h.textContent="➕ ایجاد دوره جدید";box.appendChild(h);
+  var l=document.createElement("label");l.textContent="نام دوره";box.appendChild(l);
+  var n=document.createElement("input");n.id="npName";n.placeholder="مثلاً دوره ۱۴۰۵/۰۵";box.appendChild(n);
+  var note=document.createElement("p");note.textContent="اطلاعات اولیه هر چهار سالن را وارد کنید.";box.appendChild(note);
+
+  for(var i=1;i<=4;i++){
+    var card=document.createElement("div");
+    card.style.cssText="border:1px solid #394454;border-radius:12px;padding:10px;margin:8px 0";
+    var b=document.createElement("b");b.textContent="سالن "+i;card.appendChild(b);
+
+    var a=document.createElement("input");a.id="npHall"+i;a.type="number";a.min="0";a.placeholder="تعداد جوجه ورودی";card.appendChild(a);
+    var d=document.createElement("input");d.id="npLoss"+i;d.type="number";d.min="0";d.placeholder="تلفات مسیر";card.appendChild(d);
+    var w=document.createElement("input");w.id="npWeight"+i;w.type="number";w.min="0";w.step="0.001";w.placeholder="میانگین وزن اولیه (اختیاری)";card.appendChild(w);
+    var dt=document.createElement("input");dt.id="npDate"+i;dt.placeholder="تاریخ جوجه‌ریزی شمسی";dt.readOnly=true;dt.onclick=function(){openJalaliPicker(this);};card.appendChild(dt);
+    box.appendChild(card);
+  }
+
+  var actions=document.createElement("div");actions.className="jalali-actions";
+  var cancel=document.createElement("button");cancel.textContent="انصراف";cancel.onclick=function(){m.remove();};actions.appendChild(cancel);
+  var save=document.createElement("button");save.className="btn primary";save.textContent="ثبت دوره";save.onclick=saveNewPeriod;actions.appendChild(save);
+  box.appendChild(actions);m.appendChild(box);document.body.appendChild(m);
+}
+
+function saveNewPeriod(){
+  var name=document.getElementById("npName").value.trim();
+  if(!name){alert("نام دوره را وارد کنید");return;}
+  var periods=JSON.parse(localStorage.getItem("sepid_periods")||"[]");
+  var id=String(Date.now()),halls=[];
+  for(var i=1;i<=4;i++){
+    var initial=Number(document.getElementById("npHall"+i).value||0);
+    var loss=Number(document.getElementById("npLoss"+i).value||0);
+    var weight=Number(document.getElementById("npWeight"+i).value||0);
+    var entryDate=document.getElementById("npDate"+i).value.trim();
+    if(!entryDate){alert("تاریخ جوجه‌ریزی سالن "+i+" را انتخاب کنید");return;}
+    if(loss>initial){alert("تلفات مسیر سالن "+i+" نمی‌تواند بیشتر از تعداد ورودی باشد");return;}
+    halls.push({hall:i,initial:initial,routeMortality:loss,current:Math.max(0,initial-loss),initialWeight:weight,entryDate:entryDate});
+  }
+  periods.push({id:id,name:name,createdAt:new Date().toISOString(),halls:halls,weeklyWeights:[],records:[]});
+  localStorage.setItem("sepid_periods",JSON.stringify(periods));
+  localStorage.setItem("sepid_active_period",id);
+  var modal=document.getElementById("newPeriodModal");if(modal)modal.remove();
+  populatePeriods();alert("دوره جدید با موفقیت ایجاد شد.");
+}
+
+function switchPeriod(id){
+  if(!id)return;
+  localStorage.setItem("sepid_active_period",id);
+  location.reload();
+}
+
+function populatePeriods(){
+  var sel=document.getElementById("periodSelect");if(!sel)return;
+  var periods=JSON.parse(localStorage.getItem("sepid_periods")||"[]");
+  var active=localStorage.getItem("sepid_active_period")||"";
+  sel.innerHTML='<option value="">انتخاب دوره</option>';
+  periods.forEach(function(p){
+    var o=document.createElement("option");o.value=p.id;o.textContent=p.name;
+    if(p.id===active)o.selected=true;
+    sel.appendChild(o);
+  });
+}
 </script>
 </body></html>
