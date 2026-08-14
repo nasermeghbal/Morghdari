@@ -22,7 +22,7 @@ main{flex:1;padding:18px;max-width:1400px;margin:auto;width:100%}.page{display:n
   <div class="brand">🐔 سپید گوشت</div>
   <div class="sub">نرم‌افزار حرفه‌ای مدیریت مرغداری — Version 2.0.0 — Developed by Naser Jafarzadeh</div>
   <div class="bar">
-    <button class="btn primary" onclick="openNewPeriod()">➕ ایجاد دوره جدید</button>
+    <button id="newPeriodBtn" class="btn primary" type="button">➕ ایجاد دوره جدید</button>
     <select id="periodSelect" class="btn" onchange="switchPeriod(this.value)"><option value="">انتخاب دوره</option></select>
     <button class="btn" onclick="backup()">💾 Backup</button>
     <button class="btn" onclick="document.getElementById('restore').click()">♻️ Restore</button>
@@ -111,7 +111,7 @@ main{flex:1;padding:18px;max-width:1400px;margin:auto;width:100%}.page{display:n
 <section id="reports" class="page"><div class="title">گزارش‌ها</div><div class="grid"><div class="card"><h3>گزارش دوره</h3><p class="muted">تلفات، دان، وزن، ضریب، فروش، هزینه و سهم شرکا.</p><button class="btn" onclick="exportJSON()">خروجی اطلاعات</button></div><div class="card"><h3>خروجی Excel</h3><p class="muted">برای نسخه بعدی خروجی جدولی کامل قابل توسعه است.</p><button class="btn" onclick="exportCSV()">خروجی CSV قابل باز شدن با Excel</button></div><div class="card"><h3>گزارش چاپی</h3><button class="btn" onclick="window.print()">چاپ / PDF</button></div></div></section>
 </main></div></div>
 
-<div id="periodModal" class="jalali-modal" style="display:none"></div>
+<dialog id="periodDialog" style="background:#111a23;color:#edf2f7;border:1px solid #344354;border-radius:15px;width:min(900px,96vw);max-height:90vh;overflow:auto"></dialog>
 <div id="calModal" class="jalali-modal" style="display:none"><div class="jalali-box"><div class="pcal-head"><button class="btn" onclick="calMove(-1)">‹</button><b id="calTitle"></b><button class="btn" onclick="calMove(1)">›</button></div><div id="calGrid" class="pcal-grid"></div><div class="actions"><button class="btn" onclick="closeCal()">انصراف</button></div></div></div>
 
 <script>
@@ -121,29 +121,27 @@ function save(){localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
 function active(){return db.periods.find(p=>p.id===db.active)}
 function go(id){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll(".nav button").forEach(x=>x.classList.toggle("active",x.dataset.page===id))}
 function openNewPeriod(){
- const m=document.getElementById("periodModal");
- m.style.display="flex";
+ const m=document.getElementById("periodDialog");
  m.innerHTML=
- '<div class="jalali-box" style="width:min(900px,96vw);">'+
  '<h3>➕ ایجاد دوره جدید</h3>'+
  '<div class="field"><label>نام دوره</label><input id="pn" placeholder="مثلاً دوره ۱۴۰۵/۰۵"></div>'+
- '<p class="muted">برای هر سالن تعداد جوجه و تاریخ جوجه‌ریزی را جداگانه وارد کنید.</p>'+
- '<div class="grid">'+
- [1,2,3,4].map(function(i){
-   return '<div class="card"><b>سالن '+i+'</b>'+
-   '<div class="field"><label>تعداد جوجه ورودی</label><input id="pi'+i+'" type="number" min="0"></div>'+
-   '<div class="field"><label>تلفات مسیر</label><input id="pl'+i+'" type="number" min="0" value="0"></div>'+
-   '<div class="field"><label>میانگین وزن اولیه (کیلو)</label><input id="pw'+i+'" type="number" min="0" step="0.001"></div>'+
-   '<div class="field"><label>تاریخ جوجه‌ریزی شمسی</label><input id="pd'+i+'" class="jalali" readonly placeholder="انتخاب تاریخ" onclick="pickDate(this)"></div>'+
-   '</div>';
- }).join("")+
- '</div>'+
- '<div class="actions">'+
- '<button class="btn" type="button" onclick="closePeriod()">انصراف</button>'+
- '<button class="btn primary" type="button" onclick="savePeriod()">ثبت دوره</button>'+
- '</div></div>';
+ '<p class="muted">برای هر سالن اطلاعات اولیه را جداگانه وارد کنید.</p>'+
+ '<div class="grid">'+[1,2,3,4].map(function(i){
+ return '<div class="card"><b>سالن '+i+'</b>'+
+ '<div class="field"><label>تعداد جوجه ورودی</label><input id="pi'+i+'" type="number" min="0"></div>'+
+ '<div class="field"><label>تلفات مسیر</label><input id="pl'+i+'" type="number" min="0" value="0"></div>'+
+ '<div class="field"><label>میانگین وزن اولیه</label><input id="pw'+i+'" type="number" min="0" step="0.001"></div>'+
+ '<div class="field"><label>تاریخ جوجه‌ریزی شمسی</label><input id="pd'+i+'" class="jalali" readonly placeholder="انتخاب تاریخ"></div>'+
+ '</div>';}).join("")+
+ '</div><div class="actions"><button id="periodCancel" class="btn" type="button">انصراف</button><button id="periodSave" class="btn primary" type="button">ثبت دوره</button></div>';
+ m.showModal();
+ [1,2,3,4].forEach(function(i){
+   document.getElementById("pd"+i).addEventListener("click",function(){pickDate(this);});
+ });
+ document.getElementById("periodCancel").addEventListener("click",function(){m.close();});
+ document.getElementById("periodSave").addEventListener("click",savePeriod);
 }
-function closePeriod(){document.getElementById("periodModal").style.display="none"}
+function closePeriod(){var m=document.getElementById("periodDialog");if(m&&m.open)m.close()}
 function savePeriod(){
  const name=document.getElementById("pn").value.trim();if(!name){alert("نام دوره را وارد کنید");return}
  const halls=[];
@@ -194,11 +192,12 @@ function renderAll(){
  let chicken=db.sales.filter(x=>x.type==="مرغ زنده"),manure=db.sales.filter(x=>x.type==="کود");document.getElementById("loads").textContent=db.sales.length;document.getElementById("tonnage").textContent=(db.sales.reduce((a,x)=>a+x.net,0)/1000).toFixed(2);document.getElementById("chickenSales").textContent=chicken.reduce((a,x)=>a+x.net,0).toLocaleString("fa-IR")+" کیلو";document.getElementById("manureSales").textContent=manure.reduce((a,x)=>a+x.net,0).toLocaleString("fa-IR")+" کیلو";
 }
 
-document.addEventListener("DOMContentLoaded",function(){
-  var b=document.querySelector('.top .primary');
-  if(b){b.type="button";b.onclick=function(e){e.preventDefault();openNewPeriod();};}
-  renderAll();go("dashboard");
-});
 
+document.addEventListener("DOMContentLoaded", function(){
+  var btn=document.getElementById("newPeriodBtn");
+  if(btn) btn.addEventListener("click", function(){ openNewPeriod(); });
+  renderAll();
+  go("dashboard");
+});
 </script>
 </body></html>
