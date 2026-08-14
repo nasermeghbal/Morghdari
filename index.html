@@ -36,7 +36,7 @@ input,select{width:100%;padding:10px;border-radius:9px;border:1px solid #1d3a35;
 </div>
 <div id="nav" class="nav"></div>
 <section id="view"></section>
-<div class="about">Sepid Goosht Poultry Management | Version 1.4.0 | Developed by Naser Jafarzadeh | © 2026 Naser Jafarzadeh</div>
+<div class="about">Sepid Goosht Poultry Management | Version 1.5.0 | Developed by Naser Jafarzadeh | © 2026 Naser Jafarzadeh</div>
 </main>
 
 <script>
@@ -87,7 +87,7 @@ function addP(){db.partners.push({id:uid(),name:pn.value,phone:pp.value,capital:
 function receipts(){return `<div class="box"><h2>دریافتی‌ها</h2><div class="form">${field("rp","شریک")}${field("rf","دریافت از")}${field("ra","مبلغ ریال","number")}${field("rd","تاریخ شمسی")}${field("rn","توضیحات")}</div><button class="btn primary" style="margin-top:10px" onclick="addR()">ثبت دریافتی</button></div><div class="box">${tbl("receipts",["شریک","از","مبلغ","تاریخ","توضیحات"],["partner","from","amount","date","note"])}</div>`}
 function addR(){db.receipts.push({id:uid(),partner:rp.value,from:rf.value,amount:+ra.value||0,date:rd.value||today(),note:rn.value});save()}
 function reports(){let total=db.expenses.reduce((s,x)=>s+(+x.amount||0),0);return `<div class="grid"><div class="box"><div class="label">جمع هزینه</div><div class="metric">${money(total)}</div></div><div class="box"><div class="label">جمع فروش</div><div class="metric">${money(db.sales.reduce((s,x)=>s+(+x.amount||0),0))}</div></div></div><div class="box"><h3>هزینه هر شریک</h3>${db.partners.map(p=>`<p>${p.name}: <b>${money(db.expenses.filter(e=>e.partner==p.name).reduce((s,x)=>s+(+x.amount||0),0))}</b></p>`).join("")}</div><button class="btn primary" onclick="window.print()">خروجی PDF / چاپ</button>`}
-function about(){return `<div class="box" style="text-align:center;padding:45px"><h1>Sepid Goosht Poultry Management</h1><p class="muted">Professional Poultry Farm Management System</p><p><b>Version 1.4.0</b></p><p>Developed by <b>Naser Jafarzadeh</b></p><p>© 2026 Naser Jafarzadeh</p></div>`}
+function about(){return `<div class="box" style="text-align:center;padding:45px"><h1>Sepid Goosht Poultry Management</h1><p class="muted">Professional Poultry Farm Management System</p><p><b>Version 1.5.0</b></p><p>Developed by <b>Naser Jafarzadeh</b></p><p>© 2026 Naser Jafarzadeh</p></div>`}
 
 function backupData(){
   try{
@@ -169,51 +169,16 @@ function openJalaliPicker(el){
 function cancelJalali(){document.getElementById('jalaliModal').style.display='none';jalaliTarget=null}
 function applyJalali(){
   const v=document.getElementById('jalaliDateInput').value.trim();
-  if(!/^14\\d{2}\\/((0[1-9]|1[0-2]))\\/([0-2]\\d|3[0-1])$/.test(v)){
-    alert('تاریخ را به شکل 1405/05/23 وارد کنید'); return;
-  }
-  if(jalaliTarget) jalaliTarget.value=v;
-  cancelJalali();
-}
-document.addEventListener('DOMContentLoaded',()=>{
-  document.querySelectorAll('input[type="date"]').forEach(el=>{
-    el.type='text'; el.placeholder='تاریخ شمسی؛ مثال 1405/05/23';
-    el.onclick=()=>openJalaliPicker(el);
-  });
-});
-</script>
-
-
-<script>
-function createNewPeriod(){
-  const old=document.getElementById("newPeriodModal");
-  if(old) old.remove();
-  const m=document.createElement("div");
-  m.id="newPeriodModal"; m.className="jalali-modal"; m.style.display="flex";
-  m.innerHTML='<div class="jalali-box" style="max-height:90vh;overflow:auto"><h3>➕ ایجاد دوره جدید</h3>'+
-  '<label>نام دوره</label><input id="npName" placeholder="مثلاً دوره ۱۴۰۵/۰۵">'+
-  '<label>تاریخ جوجه‌ریزی شمسی</label><input id="npDate" placeholder="مثلاً ۱۴۰۵/۰۵/۲۳">'+
-  '<p class="muted">تعداد ورودی، تلفات مسیر و وزن اولیه هر سالن را وارد کنید.</p>'+
-  [1,2,3,4].map(i=>'<div style="border:1px solid #394454;border-radius:12px;padding:10px;margin:8px 0"><b>سالن '+i+'</b>'+
-  '<input id="npHall'+i+'" type="number" min="0" placeholder="تعداد جوجه ورودی">'+
-  '<input id="npLoss'+i+'" type="number" min="0" placeholder="تلفات مسیر">'+
-  '<input id="npWeight'+i+'" type="number" min="0" step="0.001" placeholder="میانگین وزن اولیه (اختیاری)"></div>').join("")+
-  '<div class="jalali-actions"><button onclick="document.getElementById(\'newPeriodModal\').remove()">انصراف</button>'+
-  '<button onclick="saveNewPeriod()" class="btn primary">ثبت دوره</button></div></div>';
-  document.body.appendChild(m);
-}
-function saveNewPeriod(){
-  const name=document.getElementById("npName").value.trim();
-  const date=document.getElementById("npDate").value.trim();
-  if(!name){alert("نام دوره را وارد کنید");return;}
-  if(!/^14\d{2}\/(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])$/.test(date)){alert("تاریخ را به شکل ۱۴۰۵/۰۵/۲۳ وارد کنید");return;}
+if(!/^14\d{2}\/(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])$/.test(date)){alert("تاریخ را به شکل ۱۴۰۵/۰۵/۲۳ وارد کنید");return;}
   const periods=JSON.parse(localStorage.getItem("sepid_periods")||"[]");
   const id=Date.now().toString(), halls=[];
   for(let i=1;i<=4;i++){
     const initial=Number(document.getElementById("npHall"+i).value||0);
     const loss=Number(document.getElementById("npLoss"+i).value||0);
     const weight=Number(document.getElementById("npWeight"+i).value||0);
-    halls.push({hall:i,initial,routeMortality:loss,current:Math.max(0,initial-loss),initialWeight:weight,entryDate:date});
+    const entryDate=document.getElementById("npDate"+i).value.trim();
+    if(!entryDate){alert("تاریخ جوجه‌ریزی سالن "+i+" را انتخاب کنید");return;}
+    halls.push({hall:i,initial,routeMortality:loss,current:Math.max(0,initial-loss),initialWeight:weight,entryDate});
   }
   periods.push({id,name,startDate:date,createdAt:new Date().toISOString(),halls,weeklyWeights:[],records:[]});
   localStorage.setItem("sepid_periods",JSON.stringify(periods));
@@ -270,4 +235,52 @@ function totalMortalityPercent(){
 }
 </script>
 
+
+<style>
+.pcal-modal{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;z-index:10000}
+.pcal{width:min(390px,94vw);background:#151a21;border:1px solid #394454;border-radius:18px;padding:16px;color:#fff}
+.pcal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.pcal-head button,.pcal-grid button{background:#202733;color:#fff;border:1px solid #394454;border-radius:8px}
+.pcal-head button{padding:7px 13px}
+.pcal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.pcal-grid button{min-height:38px}
+.pcal-week{text-align:center;opacity:.7;font-size:12px;padding:4px}
+</style>
+<div id="persianCalendarModal" class="pcal-modal">
+<div class="pcal">
+<div class="pcal-head"><button onclick="pcalPrev()">‹</button><b id="pcalTitle"></b><button onclick="pcalNext()">›</button></div>
+<div class="pcal-grid" id="pcalGrid"></div>
+<button onclick="pcalClose()" style="margin-top:10px;padding:9px 20px;border:0;border-radius:8px">انصراف</button>
+</div></div>
+<script>
+let pcalTarget=null,pcalYear=1405,pcalMonth=1;
+const pcalMonths=["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"];
+const pcalWeek=["ش","ی","د","س","چ","پ","ج"];
+function pcalDays(y,m){return m<=6?31:m<=11?30:((y%4===3)?30:29)}
+function pcalWeekday(y,m,d){
+ let n=0; for(let yy=1403;yy<y;yy++)n+=yy%4===3?366:365;
+ for(let mm=1;mm<m;mm++)n+=pcalDays(y,mm);
+ return (3+n+d-1)%7;
+}
+function pcalRender(){
+ const g=document.getElementById("pcalGrid");g.innerHTML="";
+ document.getElementById("pcalTitle").textContent=pcalMonths[pcalMonth-1]+" "+pcalYear;
+ pcalWeek.forEach(x=>{let e=document.createElement("div");e.className="pcal-week";e.textContent=x;g.appendChild(e)});
+ for(let i=0;i<pcalWeekday(pcalYear,pcalMonth,1);i++)g.appendChild(document.createElement("div"));
+ for(let d=1;d<=pcalDays(pcalYear,pcalMonth);d++){
+  let b=document.createElement("button");b.textContent=d;
+  b.onclick=()=>{if(pcalTarget)pcalTarget.value=pcalYear+"/"+String(pcalMonth).padStart(2,"0")+"/"+String(d).padStart(2,"0");pcalClose()};
+  g.appendChild(b);
+ }
+}
+function openJalaliPicker(el){
+ pcalTarget=el;
+ let m=(el.value||"").match(/^(14\d{2})\/(\d{1,2})\/(\d{1,2})$/);
+ pcalYear=m?+m[1]:1405;pcalMonth=m?+m[2]:1;
+ document.getElementById("persianCalendarModal").style.display="flex";pcalRender();
+}
+function pcalClose(){document.getElementById("persianCalendarModal").style.display="none";pcalTarget=null}
+function pcalPrev(){if(--pcalMonth<1){pcalMonth=12;pcalYear--}pcalRender()}
+function pcalNext(){if(++pcalMonth>12){pcalMonth=1;pcalYear++}pcalRender()}
+</script>
 </body></html>
