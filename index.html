@@ -14,6 +14,14 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.app{min-height:
 main{flex:1;padding:18px;max-width:1400px;margin:auto;width:100%}.page{display:none}.page.active{display:block}.title{font-size:22px;font-weight:800;margin-bottom:14px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.card{background:#111a23;border:1px solid #293746;border-radius:15px;padding:15px}.muted{color:#91a0b2;font-size:12px}.num{font-size:26px;font-weight:800;margin-top:7px}.section{margin:18px 0}.section h3{margin:0 0 10px}.tablewrap{overflow:auto;border:1px solid #293746;border-radius:13px}.table{width:100%;border-collapse:collapse;min-width:720px}.table th,.table td{padding:10px;border-bottom:1px solid #273442;text-align:right;white-space:nowrap}.table th{background:#17212c}.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}.field label{display:block;color:#9eacbb;font-size:12px;margin-bottom:5px}.field input,.field select,.field textarea{width:100%;background:#0c131a;color:#fff;border:1px solid #354456;border-radius:9px;padding:10px}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.empty{padding:28px;text-align:center;color:#91a0b2}.progress{height:10px;background:#25303c;border-radius:20px;overflow:hidden}.progress>i{display:block;height:100%;background:#2a9b6c}.pill{display:inline-block;padding:4px 8px;border-radius:99px;background:#1b2936;font-size:11px}
 @media(max-width:800px){.layout{display:block}aside{width:100%;height:auto;position:sticky;top:112px;z-index:15}.nav{display:grid;grid-template-columns:repeat(4,1fr)}.nav button{font-size:11px}.top{position:relative}main{padding:12px}}
+
+.jalali-modal{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.82);padding:14px}
+.jalali-box{background:#111a23;color:#edf2f7;border:1px solid #344354;border-radius:15px;padding:18px;width:min(900px,96vw);max-height:90vh;overflow:auto}
+.pcal-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.pcal-week,.pcal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+.pcal-week{margin-bottom:7px;text-align:center;color:#91a0b2;font-size:12px}
+.pcal-grid button{min-height:42px}
+.calblank{min-height:42px}
 </style>
 </head>
 <body>
@@ -64,7 +72,7 @@ main{flex:1;padding:18px;max-width:1400px;margin:auto;width:100%}.page{display:n
 <div class="field"><label>تاریخ شمسی</label><input id="mDate" class="jalali" readonly onclick="pickDate(this)"></div>
 <div class="field"><label>روز هفته</label><select id="mWeekday"><option>شنبه</option><option>یکشنبه</option><option>دوشنبه</option><option>سه‌شنبه</option><option>چهارشنبه</option><option>پنجشنبه</option><option>جمعه</option></select></div>
 <div class="field"><label>سالن</label><select id="mHall"><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
-<div class="field"><label>تلفات</label><input id="mDead" type="number" min="0"></div>
+<div class="field"><label>هفته گله</label><input id="mWeek" type="number" min="1" value="1"></div><div class="field"><label>تلفات</label><input id="mDead" type="number" min="0"></div>
 </div><div class="actions"><button class="btn primary" onclick="addMortality()">ثبت تلفات</button></div></div>
 <div class="section card"><h3>ثبت میانگین وزن هفتگی هر سالن</h3><div class="formgrid">
 <div class="field"><label>هفته</label><input id="wWeek" type="number" min="1"></div>
@@ -88,7 +96,7 @@ main{flex:1;padding:18px;max-width:1400px;margin:auto;width:100%}.page{display:n
 <div class="field"><label>تاریخ شمسی</label><input id="saleDate" class="jalali" readonly onclick="pickDate(this)"></div>
 <div class="field"><label>وزن خالی ماشین (کیلو)</label><input id="emptyWeight" type="number"></div>
 <div class="field"><label>وزن پر ماشین (کیلو)</label><input id="fullWeight" type="number"></div>
-<div class="field"><label>وزن خالص (کیلو)</label><input id="netWeight" type="number"></div>
+<div class="field"><label>وزن خالص (کیلو)</label><input id="netWeight" type="number" readonly></div>
 <div class="field"><label>شماره قبض</label><input id="ticket"></div>
 <div class="field"><label>نوع خودرو</label><input id="vehicle"></div>
 <div class="field"><label>پلاک</label><input id="plate"></div>
@@ -108,7 +116,7 @@ main{flex:1;padding:18px;max-width:1400px;margin:auto;width:100%}.page{display:n
 
 <section id="partners" class="page"><div class="title">شرکا و آورده اولیه</div><div class="card"><div class="formgrid"><div class="field"><label>نام شریک</label><input id="partnerName"></div><div class="field"><label>آورده اولیه (ریال)</label><input id="partnerCapital" type="number"></div></div><div class="actions"><button class="btn primary" onclick="addPartner()">ثبت شریک</button></div></div><div class="tablewrap"><table class="table"><thead><tr><th>شریک</th><th>آورده اولیه ریال</th><th>عملیات</th></tr></thead><tbody id="partnerTable"></tbody></table></div><div class="section card"><h3>دریافتی‌ها</h3><div class="formgrid"><div class="field"><label>شریک گیرنده</label><select id="receiptPartner"></select></div><div class="field"><label>دریافت از</label><input id="receiptFrom"></div><div class="field"><label>مبلغ (ریال)</label><input id="receiptAmount" type="number"></div><div class="field"><label>تاریخ شمسی</label><input id="receiptDate" class="jalali" readonly onclick="pickDate(this)"></div></div><div class="actions"><button class="btn primary" onclick="addReceipt()">ثبت دریافتی</button></div></div></section>
 
-<section id="reports" class="page"><div class="title">گزارش‌ها</div><div class="grid"><div class="card"><h3>گزارش دوره</h3><p class="muted">تلفات، دان، وزن، ضریب، فروش، هزینه و سهم شرکا.</p><button class="btn" onclick="exportJSON()">خروجی اطلاعات</button></div><div class="card"><h3>خروجی Excel</h3><p class="muted">برای نسخه بعدی خروجی جدولی کامل قابل توسعه است.</p><button class="btn" onclick="exportCSV()">خروجی CSV قابل باز شدن با Excel</button></div><div class="card"><h3>گزارش چاپی</h3><button class="btn" onclick="window.print()">چاپ / PDF</button></div></div></section>
+<section id="reports" class="page"><div class="title">گزارش‌ها</div><div class="card section"><b>کنترل نسخه</b><p class="muted">دوره‌ها، ۴ سالن، تقویم شمسی، گله و تلفات، وزن هفتگی، انبار و مصرف، فروش مرغ/کود، باسکول، مالی، شرکا، Backup/Restore و خروجی گزارش فعال هستند.</p></div><div class="grid"><div class="card"><h3>گزارش دوره</h3><p class="muted">تلفات، دان، وزن، ضریب، فروش، هزینه و سهم شرکا.</p><button class="btn" onclick="exportJSON()">خروجی اطلاعات</button></div><div class="card"><h3>خروجی Excel</h3><p class="muted">برای نسخه بعدی خروجی جدولی کامل قابل توسعه است.</p><button class="btn" onclick="exportCSV()">خروجی CSV قابل باز شدن با Excel</button></div><div class="card"><h3>گزارش چاپی</h3><button class="btn" onclick="window.print()">چاپ / PDF</button></div></div></section>
 </main></div></div>
 
 <dialog id="periodDialog" style="background:#111a23;color:#edf2f7;border:1px solid #344354;border-radius:15px;width:min(900px,96vw);max-height:90vh;overflow:auto"></dialog>
@@ -148,12 +156,86 @@ function savePeriod(){
  for(let i=1;i<=4;i++){const initial=+document.getElementById("pi"+i).value||0,loss=+document.getElementById("pl"+i).value||0,date=document.getElementById("pd"+i).value;if(!date){alert("تاریخ سالن "+i+" را وارد کنید");return}if(loss>initial){alert("تلفات مسیر سالن "+i+" بیشتر از ورودی است");return}halls.push({hall:i,initial,routeMortality:loss,current:initial-loss,weight:+document.getElementById("pw"+i).value||0,date})}
  const p={id:Date.now().toString(),name,halls,created:new Date().toISOString()};db.periods.push(p);db.active=p.id;save();closePeriod();alert("دوره جدید ایجاد شد")}
 function switchPeriod(id){if(id){db.active=id;save()}}
-function pickDate(el){window.calTarget=el;document.getElementById("calModal").style.display="flex";calRender()}
-let cy=1405,cm=1;
-function calDays(y,m){return m<=6?31:m<=11?30:29}
-function calRender(){document.getElementById("calTitle").textContent=["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"][cm-1]+" "+cy;const g=document.getElementById("calGrid");g.innerHTML="";for(let d=1;d<=calDays(cy,cm);d++){let b=document.createElement("button");b.className="btn";b.textContent=d;b.onclick=()=>{window.calTarget.value=cy+"/"+String(cm).padStart(2,"0")+"/"+String(d).padStart(2,"0");closeCal()};g.appendChild(b)}}
-function calMove(n){cm+=n;if(cm<1){cm=12;cy--}if(cm>12){cm=1;cy++}calRender()}function closeCal(){document.getElementById("calModal").style.display="none"}
-function addMortality(){db.mortality.push({date:val("mDate"),weekday:val("mWeekday"),hall:+val("mHall"),dead:+val("mDead")||0});save()}
+
+function getTodayJalali(){
+  try{
+    var parts=new Intl.DateTimeFormat("en-US-u-ca-persian",{year:"numeric",month:"numeric",day:"numeric"}).formatToParts(new Date());
+    var o={}; parts.forEach(function(x){if(x.type!=="literal")o[x.type]=+x.value;});
+    return {y:o.year,m:o.month,d:o.day};
+  }catch(e){return {y:1405,m:5,d:24};}
+}
+function jalaliMonthName(m){
+  return ["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"][m-1];
+}
+function jalaliDaysInMonth(y,m){
+  if(m<=6)return 31;
+  if(m<=11)return 30;
+  return (y%4===3)?30:29;
+}
+var cy=1405,cm=1;
+function pickDate(el){
+  window.calTarget=el;
+  var old=document.getElementById("calOverlay");
+  if(old)old.remove();
+
+  var ov=document.createElement("div");
+  ov.id="calOverlay";ov.className="jalali-modal";
+  var box=document.createElement("div");box.className="jalali-box";
+  box.innerHTML='<div class="pcal-head">'+
+    '<button type="button" class="btn" id="calPrev">‹</button>'+
+    '<b id="calTitle"></b>'+
+    '<button type="button" class="btn" id="calNext">›</button></div>'+
+    '<div class="pcal-week"><span>ش</span><span>ی</span><span>د</span><span>س</span><span>چ</span><span>پ</span><span>ج</span></div>'+
+    '<div id="calGrid" class="pcal-grid"></div>'+
+    '<div class="actions"><button type="button" class="btn" id="calToday">امروز</button><button type="button" class="btn" id="calCancel">انصراف</button></div>';
+  ov.appendChild(box);document.body.appendChild(ov);
+
+  var today=getTodayJalali(),existing=(el.value||"").match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+  if(existing){cy=+existing[1];cm=+existing[2]}else{cy=today.y;cm=today.m}
+  document.getElementById("calPrev").onclick=function(){calMove(-1)};
+  document.getElementById("calNext").onclick=function(){calMove(1)};
+  document.getElementById("calCancel").onclick=closeCal;
+  document.getElementById("calToday").onclick=function(){
+    if(window.calTarget){window.calTarget.value=today.y+"/"+String(today.m).padStart(2,"0")+"/"+String(today.d).padStart(2,"0");}
+    closeCal();
+  };
+  calRender();
+}
+function calRender(){
+  var title=document.getElementById("calTitle"),grid=document.getElementById("calGrid");
+  if(!title||!grid)return;
+  title.textContent=jalaliMonthName(cm)+" "+cy;
+  grid.innerHTML="";
+  var first=0;
+  // Persian calendar weekday alignment via conversion to Gregorian for the first day.
+  try{
+    var g=new Date((cy+621),cm-1,1);
+    first=(g.getDay()+1)%7;
+  }catch(e){first=0}
+  for(var i=0;i<first;i++){var blank=document.createElement("span");blank.className="calblank";grid.appendChild(blank)}
+  var max=jalaliDaysInMonth(cy,cm);
+  for(var d=1;d<=max;d++){
+    var b=document.createElement("button");b.type="button";b.className="btn";b.textContent=d;
+    b.onclick=(function(day){
+      return function(){
+        if(window.calTarget){
+          window.calTarget.value=cy+"/"+String(cm).padStart(2,"0")+"/"+String(day).padStart(2,"0");
+          window.calTarget.dispatchEvent(new Event("change",{bubbles:true}));
+        }
+        closeCal();
+      };
+    })(d);
+    grid.appendChild(b);
+  }
+}
+function calMove(n){
+  cm+=n;
+  if(cm<1){cm=12;cy--}
+  if(cm>12){cm=1;cy++}
+  calRender();
+}
+function closeCal(){var x=document.getElementById("calOverlay");if(x)x.remove();}
+function addMortality(){db.mortality.push({date:val("mDate"),weekday:val("mWeekday"),week:+val("mWeek")||1,hall:+val("mHall"),dead:+val("mDead")||0});save()}
 function addWeight(){db.weights.push({week:+val("wWeek"),hall:+val("wHall"),weight:+val("wWeight")||0,date:val("wDate")});save()}
 function addMedicine(){db.medicine.push({date:val("medDate"),name:val("medName"),qty:val("medQty"),unit:val("medUnit")});save()}
 function addStock(){db.stockIn.push({type:val("stockType"),brand:val("stockBrand"),date:val("stockDate"),qty:+val("stockQty")||0,price:+val("stockPrice")||0});save()}
@@ -164,7 +246,7 @@ function addCost(){db.costs.push({date:val("costDate"),name:val("costName"),amou
 function addReceipt(){db.receipts.push({partner:val("receiptPartner"),from:val("receiptFrom"),amount:+val("receiptAmount")||0,date:val("receiptDate")});save()}
 function val(id){return document.getElementById(id)?.value||""}
 function backup(){let a=document.createElement("a"),blob=new Blob([JSON.stringify({app:"Sepid Goosht",version:"2.0.0",data:db},null,2)],{type:"application/json"});a.href=URL.createObjectURL(blob);a.download="Sepid_Goosht_Backup_"+Date.now()+".json";a.click();URL.revokeObjectURL(a.href)}
-function restore(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);db=x.data||x;save();alert("اطلاعات بازیابی شد")}catch(_){alert("فایل Backup معتبر نیست")}};r.readAsText(f)}
+function restore(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);let incoming=x.data||x;db=Object.assign({periods:[],active:null,partners:[],mortality:[],weights:[],medicine:[],stockIn:[],stockUse:[],sales:[],costs:[],receipts:[]},incoming);save();alert("اطلاعات با موفقیت بازیابی شد")}catch(_){alert("فایل Backup معتبر نیست")}};r.readAsText(f)}
 function exportJSON(){backup()}
 function exportCSV(){let rows=[["نوع","تاریخ","مقدار","مبلغ"],...db.sales.map(x=>["فروش "+x.type,x.date,x.net,x.amount]),...db.stockIn.map(x=>["ورود انبار "+x.type,x.date,x.qty,x.price])];let csv=rows.map(r=>r.map(x=>'"'+String(x??"").replace(/"/g,'""')+'"').join(",")).join("\n");let a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"}));a.download="Sepid_Goosht_Report.csv";a.click()}
 function renderAll(){
@@ -176,13 +258,37 @@ function renderAll(){
  document.getElementById("dashBirds").textContent=Math.max(0,totalInitial-totalDead).toLocaleString("fa-IR");
  document.getElementById("dashMort").textContent=totalDead.toLocaleString("fa-IR");
  document.getElementById("dashMortPct").textContent=(totalInitial?(totalDead/totalInitial*100):0).toFixed(2)+"%";
- document.getElementById("dashWeek1").textContent=mort.filter(x=>x.weekday&&false).reduce((a,x)=>a+x.dead,0).toLocaleString("fa-IR");
+ document.getElementById("dashWeek1").textContent=mort.filter(function(x){return Number(x.week)<=1;}).reduce(function(a,x){return a+x.dead;},0).toLocaleString("fa-IR");
  document.getElementById("dashSurvival").textContent=(totalInitial?((totalInitial-totalDead)/totalInitial*100):100).toFixed(2)+"%";
  document.getElementById("dashFeed").textContent=db.stockUse.reduce((a,x)=>a+x.qty,0).toLocaleString("fa-IR")+" کیلو";
  document.getElementById("today").textContent=new Date().toLocaleDateString("fa-IR");
- document.getElementById("hallTable").innerHTML=halls.map(h=>{let d=mort.filter(x=>x.hall==h.hall).reduce((a,x)=>a+x.dead,0)+h.routeMortality,w=weights.filter(x=>x.hall==h.hall).slice(-1)[0]?.weight||h.weight||0,cur=Math.max(0,h.initial-d);return '<tr><td>سالن '+h.hall+'</td><td>'+h.date+'</td><td>'+cur.toLocaleString("fa-IR")+'</td><td>'+d.toLocaleString("fa-IR")+'</td><td>'+((d/h.initial*100)||0).toFixed(2)+'%</td><td>'+w+'</td><td>—</td></tr>'}).join("");
- document.getElementById("hallCards").innerHTML=halls.map(h=>'<div class="card"><b>سالن '+h.hall+'</b><div class="muted">ضریب با ثبت وزن هفتگی محاسبه می‌شود</div><div class="num">—</div></div>').join("");
- document.getElementById("stockTotal").textContent=(db.stockIn.reduce((a,x)=>a+x.qty,0)-db.stockUse.reduce((a,x)=>a+x.qty,0)).toLocaleString("fa-IR")+" کیلو";
+ 
+ var totalFeed=db.stockUse.reduce(function(a,x){return a+x.qty;},0);
+ var hallData=halls.map(function(h){
+   var d=mort.filter(function(x){return x.hall==h.hall;}).reduce(function(a,x){return a+x.dead;},0)+h.routeMortality;
+   var wlist=weights.filter(function(x){return x.hall==h.hall;});
+   var w=wlist.length?wlist[wlist.length-1].weight:(h.weight||0);
+   var cur=Math.max(0,h.initial-d);
+   var share=totalInitial?cur/totalInitial:0;
+   var hallFeed=totalFeed*share;
+   var liveKg=cur*w;
+   var fcr=liveKg>0?hallFeed/liveKg:0;
+   return {h:h,d:d,w:w,cur:cur,fcr:fcr};
+ });
+ var totalLiveKg=hallData.reduce(function(a,x){return a+x.cur*x.w;},0);
+ var totalFcr=totalLiveKg>0?totalFeed/totalLiveKg:0;
+ document.getElementById("hallTable").innerHTML=hallData.map(function(x){
+   return '<tr><td>سالن '+x.h.hall+'</td><td>'+x.h.date+'</td><td>'+x.cur.toLocaleString("fa-IR")+
+   '</td><td>'+x.d.toLocaleString("fa-IR")+'</td><td>'+((x.d/x.h.initial*100)||0).toFixed(2)+
+   '%</td><td>'+x.w+'</td><td>'+ (x.fcr?x.fcr.toFixed(2):"—") +'</td></tr>';
+ }).join("");
+ document.getElementById("hallCards").innerHTML=
+ '<div class="card"><b>ضریب کل مرغداری</b><div class="num">'+(totalFcr?totalFcr.toFixed(2):"—")+
+ '</div><div class="muted">بر مبنای دان مصرفی کل و وزن زنده فعلی</div></div>'+
+ hallData.map(function(x){return '<div class="card"><b>ضریب سالن '+x.h.hall+
+ '</b><div class="num">'+(x.fcr?x.fcr.toFixed(2):"—")+
+ '</div><div class="muted">وزن '+x.w+' کیلو — موجودی '+x.cur.toLocaleString("fa-IR")+'</div></div>';}).join("");
+document.getElementById("stockTotal").textContent=(db.stockIn.reduce((a,x)=>a+x.qty,0)-db.stockUse.reduce((a,x)=>a+x.qty,0)).toLocaleString("fa-IR")+" کیلو";
  document.getElementById("stockUsed").textContent=db.stockUse.reduce((a,x)=>a+x.qty,0).toLocaleString("fa-IR")+" کیلو";
  document.getElementById("useType").innerHTML=[...new Set(db.stockIn.map(x=>x.type).filter(Boolean))].map(x=>'<option>'+x+'</option>').join("")||'<option>ذرت</option>';
  ["costPartner","receiptPartner"].forEach(id=>document.getElementById(id).innerHTML=db.partners.map(x=>'<option>'+x.name+'</option>').join("")||'<option>—</option>');
@@ -198,6 +304,13 @@ document.addEventListener("DOMContentLoaded", function(){
   if(btn) btn.addEventListener("click", function(){ openNewPeriod(); });
   renderAll();
   go("dashboard");
+});
+
+document.addEventListener("input",function(e){
+  if(e.target && (e.target.id==="fullWeight" || e.target.id==="emptyWeight")){
+    var f=+val("fullWeight")||0,em=+val("emptyWeight")||0;
+    var n=document.getElementById("netWeight");if(n)n.value=Math.max(0,f-em);
+  }
 });
 </script>
 </body></html>
