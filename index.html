@@ -23,7 +23,7 @@ main{flex:1;padding:18px;max-width:1400px;margin:auto;width:100%}.page{display:n
 .pcal-grid button{min-height:42px}
 .calblank{min-height:42px}
 </style>
-<style id="jalali-calendar-final-css">#calOverlay{position:fixed!important;inset:0!important;z-index:2147483647!important;display:flex!important;align-items:center!important;justify-content:center!important;background:rgba(0,0,0,.84)!important;padding:14px!important;box-sizing:border-box!important;pointer-events:auto!important}#calOverlay .jalali-box{max-height:90vh;overflow:auto;pointer-events:auto!important;position:relative!important;z-index:2147483648!important}#calOverlay button{touch-action:manipulation!important;pointer-events:auto!important}</style><style id="jalali-real-css">#calOverlay{position:fixed;inset:0;z-index:2147483647;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.8);pointer-events:auto}#calOverlay.open{display:flex}#calOverlay .pcal{width:min(430px,94vw);background:#111a23;color:#fff;border:1px solid #4b5c70;border-radius:18px;padding:16px;box-sizing:border-box;box-shadow:0 30px 100px rgba(0,0,0,.8)}#calOverlay .pcal-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}#calOverlay .pcal-week,#calOverlay .pcal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}#calOverlay .pcal-week{text-align:center;color:#aeb8c4;font-size:12px;margin-bottom:6px}#calOverlay .pcal-grid button{min-height:40px;touch-action:manipulation}#calOverlay .pcal-grid .empty{min-height:40px}#calOverlay .pcal-foot{display:flex;justify-content:space-between;gap:8px;margin-top:12px}</style></head>
+<style id="jalali-calendar-final-css">#calOverlay{position:fixed!important;inset:0!important;z-index:2147483647!important;display:flex!important;align-items:center!important;justify-content:center!important;background:rgba(0,0,0,.84)!important;padding:14px!important;box-sizing:border-box!important;pointer-events:auto!important}#calOverlay .jalali-box{max-height:90vh;overflow:auto;pointer-events:auto!important;position:relative!important;z-index:2147483648!important}#calOverlay button{touch-action:manipulation!important;pointer-events:auto!important}</style></head>
 <body>
 <div class="app">
 <header class="top">
@@ -120,6 +120,7 @@ main{flex:1;padding:18px;max-width:1400px;margin:auto;width:100%}.page{display:n
 </main></div></div>
 
 <dialog id="periodDialog" style="background:#111a23;color:#edf2f7;border:1px solid #344354;border-radius:15px;width:min(900px,96vw);max-height:90vh;overflow:auto"></dialog>
+<div id="calModal" class="jalali-modal" style="display:none"><div class="jalali-box"><div class="pcal-head"><button class="btn" onclick="calMove(-1)">‹</button><b id="calTitle"></b><button class="btn" onclick="calMove(1)">›</button></div><div id="calGrid" class="pcal-grid"></div><div class="actions"><button class="btn" onclick="closeCal()">انصراف</button></div></div></div>
 
 <script>
 const KEY="sepid_goosht_v2";
@@ -195,7 +196,7 @@ function pickDate(el){
   var old=document.getElementById("calOverlay");if(old)old.remove();
   var ov=document.createElement("div");ov.id="calOverlay";ov.className="jalali-modal";
   var box=document.createElement("div");box.className="jalali-box";
-  box.innerHTML='<div class="pcal-head"><button type="button" class="btn" id="calPrev">‹</button><b data-cal-title></b><button type="button" class="btn" id="calNext">›</button></div><div class="pcal-week"><span>ش</span><span>ی</span><span>د</span><span>س</span><span>چ</span><span>پ</span><span>ج</span></div><div data-cal-grid class="pcal-grid"></div><div class="actions"><button type="button" class="btn" id="calToday">امروز</button><button type="button" class="btn" id="calCancel">انصراف</button></div>';
+  box.innerHTML='<div class="pcal-head"><button type="button" class="btn" id="calPrev">‹</button><b id="calTitle"></b><button type="button" class="btn" id="calNext">›</button></div><div class="pcal-week"><span>ش</span><span>ی</span><span>د</span><span>س</span><span>چ</span><span>پ</span><span>ج</span></div><div id="calGrid" class="pcal-grid"></div><div class="actions"><button type="button" class="btn" id="calToday">امروز</button><button type="button" class="btn" id="calCancel">انصراف</button></div>';
   ov.appendChild(box);
   /* A native <dialog> is in the browser top layer. Mounting the picker inside that dialog
      keeps the picker in the same top layer, fixing the old "under the page" bug. */
@@ -203,14 +204,14 @@ function pickDate(el){
   (host||document.documentElement).appendChild(ov);
   var t=getTodayJalali(),v=(el.value||"").match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
   cy=v?+v[1]:t.y;cm=v?+v[2]:t.m;
-  ov.querySelector("#calPrev").onclick=function(){calMove(-1);};
-  ov.querySelector("#calNext").onclick=function(){calMove(1);};
-  ov.querySelector("#calCancel").onclick=closeCal;
-  ov.querySelector("#calToday").onclick=function(){setCalendarDate(t.y,t.m,t.d);};
+  document.getElementById("calPrev").onclick=function(){calMove(-1);};
+  document.getElementById("calNext").onclick=function(){calMove(1);};
+  document.getElementById("calCancel").onclick=closeCal;
+  document.getElementById("calToday").onclick=function(){setCalendarDate(t.y,t.m,t.d);};
   calRender();
 }
 function calRender(){
-  var root=document.getElementById("calOverlay");if(!root)return;var title=root.querySelector("[data-cal-title]"),grid=root.querySelector("[data-cal-grid]");if(!title||!grid)return;
+  var title=document.getElementById("calTitle"),grid=document.getElementById("calGrid");if(!title||!grid)return;
   title.textContent=jalaliMonthName(cm)+" "+cy;grid.innerHTML="";
   /* Saturday is column 0. Convert the exact Jalali first day to Gregorian, then use JS weekday. */
   var offset=(jalaliToGregorian(cy,cm,1).getDay()+1)%7;
@@ -222,6 +223,63 @@ function calRender(){
     grid.appendChild(b);
   }
 }
+
+/* Exact Jalali calendar math. Only the calendar calculation was changed;
+   v3.3.0 overlay/layer behavior remains untouched. */
+function j2d(jy,jm,jd){
+  var epbase=jy-(jy>=0?474:473), epyear=474+(epbase%2820);
+  return jd+(jm<=7?(jm-1)*31:(jm-1)*30+6)
+    +Math.floor((epyear*682-110)/2816)+(epyear-1)*365
+    +Math.floor(epbase/2820)*1029983+1948319;
+}
+function d2j(jdn){
+  var depoch=jdn-j2d(475,1,1), cycle=Math.floor(depoch/1029983),
+      cyear=depoch%1029983, ycycle;
+  if(cyear===1029982) ycycle=2820;
+  else{
+    var a=Math.floor(cyear/366), b=cyear%366;
+    ycycle=Math.floor((2134*a+2816*b+2815)/1028522)+a+1;
+  }
+  var jy=ycycle+2820*cycle+474;
+  if(jy<=0) jy--;
+  var yday=jdn-j2d(jy,1,1)+1;
+  var jm=yday<=186?Math.floor((yday-1)/31)+1:Math.floor((yday-187)/30)+7;
+  var jd=jdn-j2d(jy,jm,1)+1;
+  return {y:jy,m:jm,d:jd};
+}
+function g2d(y,m,d){
+  var a=Math.floor((14-m)/12), y2=y+4800-a, m2=m+12*a-3;
+  return d+Math.floor((153*m2+2)/5)+365*y2+Math.floor(y2/4)
+    -Math.floor(y2/100)+Math.floor(y2/400)-32045;
+}
+function d2g(j){
+  var a=j+32044,b=Math.floor((4*a+3)/146097),
+      c=a-Math.floor(146097*b/4),d=Math.floor((4*c+3)/1461),
+      e=c-Math.floor(1461*d/4),m=Math.floor((5*e+2)/153),
+      day=e-Math.floor((153*m+2)/5)+1,
+      mon=m+3-12*Math.floor(m/10),
+      year=100*b+d-4800+Math.floor(m/10);
+  return {y:year,m:mon,d:day};
+}
+function toJalali(date){
+  return d2j(g2d(date.getFullYear(),date.getMonth()+1,date.getDate()));
+}
+function toGregorian(jy,jm,jd){
+  var g=d2g(j2d(jy,jm,jd));
+  return new Date(g.y,g.m-1,g.d);
+}
+function isJalaliLeap(y){
+  return j2d(y+1,1,1)-j2d(y,1,1)===366;
+}
+function daysInMonth(y,m){
+  if(m<=6) return 31;
+  if(m<=11) return 30;
+  return isJalaliLeap(y)?30:29;
+}
+function jalaliWeekday(y,m,d){
+  return (toGregorian(y,m,d).getDay()+1)%7; /* 0=Saturday ... 6=Friday */
+}
+
 function calMove(n){cm+=n;if(cm<1){cm=12;cy--;}if(cm>12){cm=1;cy++;}calRender();}
 function closeCal(){var x=document.getElementById("calOverlay");if(x)x.remove();window.calTarget=null;}
 /* One capture-phase handler handles every current and future date input. */
@@ -297,26 +355,4 @@ document.addEventListener("input",function(e){
   }
 });
 </script>
-<script id="jalali-real-js">
-(function(){
-"use strict";
-function j2d(jy,jm,jd){var epbase=jy-(jy>=0?474:473),epyear=474+(epbase%2820);return jd+(jm<=7?(jm-1)*31:(jm-1)*30+6)+Math.floor((epyear*682-110)/2816)+(epyear-1)*365+Math.floor(epbase/2820)*1029983+1948319}
-function d2j(jdn){var depoch=jdn-j2d(475,1,1),cycle=Math.floor(depoch/1029983),cyear=depoch%1029983,ycycle;if(cyear===1029982)ycycle=2820;else{var a=Math.floor(cyear/366),b=cyear%366;ycycle=Math.floor((2134*a+2816*b+2815)/1028522)+a+1}var jy=ycycle+2820*cycle+474;if(jy<=0)jy--;var yday=jdn-j2d(jy,1,1)+1,jm=yday<=186?Math.floor((yday-1)/31)+1:Math.floor((yday-187)/30)+7,jd=jdn-j2d(jy,jm,1)+1;return{y:jy,m:jm,d:jd}}
-function g2d(y,m,d){var a=Math.floor((14-m)/12),y2=y+4800-a,m2=m+12*a-3;return d+Math.floor((153*m2+2)/5)+365*y2+Math.floor(y2/4)-Math.floor(y2/100)+Math.floor(y2/400)-32045}
-function d2g(j){var a=j+32044,b=Math.floor((4*a+3)/146097),c=a-Math.floor(146097*b/4),d=Math.floor((4*c+3)/1461),e=c-Math.floor(1461*d/4),m=Math.floor((5*e+2)/153),day=e-Math.floor((153*m+2)/5)+1,mon=m+3-12*Math.floor(m/10),year=100*b+d-4800+Math.floor(m/10);return{y:year,m:mon,d:day}}
-function toJ(d){return d2j(g2d(d.getFullYear(),d.getMonth()+1,d.getDate()))}
-function toG(y,m,d){var g=d2g(j2d(y,m,d));return new Date(g.y,g.m-1,g.d)}
-function leap(y){return j2d(y+1,1,1)-j2d(y,1,1)===366}
-function mdays(y,m){return m<=6?31:m<=11?30:(leap(y)?30:29)}
-function weekday(y,m,d){return (toG(y,m,d).getDay()+1)%7}
-var active=null,Y=1405,M=1,names=["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"];
-function close(){var o=document.getElementById("calOverlay");if(o)o.classList.remove("open");active=null}
-function choose(y,m,d){if(active){active.value=y+"/"+String(m).padStart(2,"0")+"/"+String(d).padStart(2,"0");active.dispatchEvent(new Event("input",{bubbles:true}));active.dispatchEvent(new Event("change",{bubbles:true}))}close()}
-function render(){var o=document.getElementById("calOverlay"),t=o.querySelector("[data-cal-title]"),g=o.querySelector("[data-cal-grid]");t.textContent=names[M-1]+" "+Y;g.innerHTML="";for(var i=0;i<weekday(Y,M,1);i++){var e=document.createElement("span");e.className="empty";g.appendChild(e)}for(var d=1;d<=mdays(Y,M);d++){var b=document.createElement("button");b.type="button";b.className="btn";b.textContent=d;b.onclick=(function(x){return function(){choose(Y,M,x)}})(d);g.appendChild(b)}}
-function move(n){M+=n;if(M<1){M=12;Y--}if(M>12){M=1;Y++}render()}
-function open(input){active=input;var t=toJ(new Date()),v=(input.value||"").match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);Y=v?+v[1]:t.y;M=v?+v[2]:t.m;var o=document.getElementById("calOverlay");if(!o){o=document.createElement("div");o.id="calOverlay";o.innerHTML='<div class="pcal" dir="rtl"><div class="pcal-head"><button type="button" class="btn" data-prev>‹</button><b data-cal-title></b><button type="button" class="btn" data-next>›</button></div><div class="pcal-week"><span>ش</span><span>ی</span><span>د</span><span>س</span><span>چ</span><span>پ</span><span>ج</span></div><div data-cal-grid class="pcal-grid"></div><div class="pcal-foot"><button type="button" class="btn" data-today>امروز</button><button type="button" class="btn" data-close>انصراف</button></div></div>';document.documentElement.appendChild(o);o.querySelector("[data-prev]").onclick=function(){move(-1)};o.querySelector("[data-next]").onclick=function(){move(1)};o.querySelector("[data-close]").onclick=close;o.querySelector("[data-today]").onclick=function(){var x=toJ(new Date());choose(x.y,x.m,x.d)}}o.classList.add("open");render()}
-window.openJalaliPicker=open;window.closeJalaliPicker=close;window.pickDate=open;
-document.addEventListener("click",function(e){var el=e.target;if(el&&el.matches&&el.matches('input[type="date"],input[data-date],input.jalali,input[data-jalali],input[placeholder*="تاریخ"]')){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();if(el.type==="date")el.type="text";el.readOnly=true;el.setAttribute("data-jalali","1");open(el)}},true);
-document.addEventListener("DOMContentLoaded",function(){document.querySelectorAll('input[type="date"],input[data-date],input.jalali,input[placeholder*="تاریخ"]').forEach(function(el){if(el.type==="date")el.type="text";el.readOnly=true;el.setAttribute("data-jalali","1")})});
-})();
-</script></body></html>
+</body></html>
