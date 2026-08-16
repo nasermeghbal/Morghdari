@@ -23,16 +23,7 @@ main{flex:1;padding:18px;max-width:1400px;margin:auto;width:100%}.page{display:n
 .pcal-grid button{min-height:42px}
 .calblank{min-height:42px}
 </style>
-<style id="jalali-final-css">
-#jalaliPortal{position:fixed;inset:0;z-index:2147483647;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.78);pointer-events:auto}
-#jalaliPortal.open{display:flex}
-#jalaliPortal .jp{width:min(420px,94vw);background:#111a23;color:#fff;border:1px solid #4b5c70;border-radius:18px;padding:16px;box-sizing:border-box;box-shadow:0 30px 100px rgba(0,0,0,.8);font-family:inherit}
-#jalaliPortal .jph{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
-#jalaliPortal .jpw,#jalaliPortal .jpg{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
-#jalaliPortal .jpw{font-size:12px;color:#aeb8c4;text-align:center;margin-bottom:6px}
-#jalaliPortal button{min-height:40px;touch-action:manipulation}
-#jalaliPortal .jpf{display:flex;justify-content:space-between;gap:8px;margin-top:12px}
-</style></head>
+<style id="jalali-calendar-final-css">#calOverlay{position:fixed!important;inset:0!important;z-index:2147483647!important;display:flex!important;align-items:center!important;justify-content:center!important;background:rgba(0,0,0,.84)!important;padding:14px!important;box-sizing:border-box!important;pointer-events:auto!important}#calOverlay .jalali-box{max-height:90vh;overflow:auto;pointer-events:auto!important;position:relative!important;z-index:2147483648!important}#calOverlay button{touch-action:manipulation!important;pointer-events:auto!important}</style></head>
 <body>
 <div class="app">
 <header class="top">
@@ -168,96 +159,81 @@ function switchPeriod(id){if(id){db.active=id;save()}}
 
 function getTodayJalali(){
   try{
-    var parts=new Intl.DateTimeFormat("en-US-u-ca-persian",{year:"numeric",month:"numeric",day:"numeric"}).formatToParts(new Date());
-    var o={}; parts.forEach(function(x){if(x.type!=="literal")o[x.type]=+x.value;});
+    var p=new Intl.DateTimeFormat("en-US-u-ca-persian",{year:"numeric",month:"numeric",day:"numeric"}).formatToParts(new Date()),o={};
+    p.forEach(function(x){if(x.type!=="literal")o[x.type]=+x.value;});
     return {y:o.year,m:o.month,d:o.day};
-  }catch(e){return {y:1405,m:5,d:24};}
+  }catch(e){return {y:1405,m:5,d:25};}
 }
-function jalaliMonthName(m){
-  return ["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"][m-1];
+function jalaliMonthName(m){return ["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"][m-1];}
+function persianParts(date){
+  var p=new Intl.DateTimeFormat("en-US-u-ca-persian",{year:"numeric",month:"numeric",day:"numeric"}).formatToParts(date),o={};
+  p.forEach(function(x){if(x.type!=="literal")o[x.type]=+x.value;});
+  return o;
+}
+function jalaliToGregorian(y,m,d){
+  var approx=new Date(y+621,2,20);
+  for(var k=-25;k<=45;k++){
+    var g=new Date(approx.getFullYear(),approx.getMonth(),approx.getDate()+k),q=persianParts(g);
+    if(q.year===y&&q.month===m&&q.day===d)return g;
+  }
+  return approx;
 }
 function jalaliDaysInMonth(y,m){
-  if(m<=6)return 31;
-  if(m<=11)return 30;
-  return (y%4===3)?30:29;
+  var first=jalaliToGregorian(y,m,1),next=(m===12)?jalaliToGregorian(y+1,1,1):jalaliToGregorian(y,m+1,1);
+  return Math.round((next-first)/86400000);
 }
 var cy=1405,cm=1;
+function setCalendarDate(y,m,d){
+  if(window.calTarget){
+    window.calTarget.value=y+"/"+String(m).padStart(2,"0")+"/"+String(d).padStart(2,"0");
+    window.calTarget.dispatchEvent(new Event("input",{bubbles:true}));
+    window.calTarget.dispatchEvent(new Event("change",{bubbles:true}));
+  }
+  closeCal();
+}
 function pickDate(el){
   window.calTarget=el;
-  var old=document.getElementById("calOverlay");
-  if(old)old.remove();
-
-  var ov=document.createElement("div");
-  ov.id="calOverlay";ov.className="jalali-modal";
+  var old=document.getElementById("calOverlay");if(old)old.remove();
+  var ov=document.createElement("div");ov.id="calOverlay";ov.className="jalali-modal";
   var box=document.createElement("div");box.className="jalali-box";
-  box.innerHTML='<div class="pcal-head">'+
-    '<button type="button" class="btn" id="calPrev">‹</button>'+
-    '<b id="calTitle"></b>'+
-    '<button type="button" class="btn" id="calNext">›</button></div>'+
-    '<div class="pcal-week"><span>ش</span><span>ی</span><span>د</span><span>س</span><span>چ</span><span>پ</span><span>ج</span></div>'+
-    '<div id="calGrid" class="pcal-grid"></div>'+
-    '<div class="actions"><button type="button" class="btn" id="calToday">امروز</button><button type="button" class="btn" id="calCancel">انصراف</button></div>';
-  ov.appendChild(box);document.body.appendChild(ov);
-
-  var today=getTodayJalali(),existing=(el.value||"").match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
-  if(existing){cy=+existing[1];cm=+existing[2]}else{cy=today.y;cm=today.m}
-  document.getElementById("calPrev").onclick=function(){calMove(-1)};
-  document.getElementById("calNext").onclick=function(){calMove(1)};
+  box.innerHTML='<div class="pcal-head"><button type="button" class="btn" id="calPrev">‹</button><b id="calTitle"></b><button type="button" class="btn" id="calNext">›</button></div><div class="pcal-week"><span>ش</span><span>ی</span><span>د</span><span>س</span><span>چ</span><span>پ</span><span>ج</span></div><div id="calGrid" class="pcal-grid"></div><div class="actions"><button type="button" class="btn" id="calToday">امروز</button><button type="button" class="btn" id="calCancel">انصراف</button></div>';
+  ov.appendChild(box);
+  /* A native <dialog> is in the browser top layer. Mounting the picker inside that dialog
+     keeps the picker in the same top layer, fixing the old "under the page" bug. */
+  var host=el.closest?el.closest("dialog"):null;
+  (host||document.documentElement).appendChild(ov);
+  var t=getTodayJalali(),v=(el.value||"").match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+  cy=v?+v[1]:t.y;cm=v?+v[2]:t.m;
+  document.getElementById("calPrev").onclick=function(){calMove(-1);};
+  document.getElementById("calNext").onclick=function(){calMove(1);};
   document.getElementById("calCancel").onclick=closeCal;
-  document.getElementById("calToday").onclick=function(){
-    if(window.calTarget){window.calTarget.value=today.y+"/"+String(today.m).padStart(2,"0")+"/"+String(today.d).padStart(2,"0");}
-    closeCal();
-  };
+  document.getElementById("calToday").onclick=function(){setCalendarDate(t.y,t.m,t.d);};
   calRender();
 }
 function calRender(){
-  var title=document.getElementById("calTitle"),grid=document.getElementById("calGrid");
-  if(!title||!grid)return;
-  title.textContent=jalaliMonthName(cm)+" "+cy;
-  grid.innerHTML="";
-  var first=0;
-  // Persian calendar weekday alignment via conversion to Gregorian for the first day.
-  try{
-    var g=new Date((cy+621),cm-1,1);
-    first=(g.getDay()+1)%7;
-  }catch(e){first=0}
-  for(var i=0;i<first;i++){var blank=document.createElement("span");blank.className="calblank";grid.appendChild(blank)}
+  var title=document.getElementById("calTitle"),grid=document.getElementById("calGrid");if(!title||!grid)return;
+  title.textContent=jalaliMonthName(cm)+" "+cy;grid.innerHTML="";
+  /* Saturday is column 0. Convert the exact Jalali first day to Gregorian, then use JS weekday. */
+  var offset=(jalaliToGregorian(cy,cm,1).getDay()+1)%7;
+  for(var i=0;i<offset;i++){var blank=document.createElement("span");blank.className="calblank";grid.appendChild(blank);}
   var max=jalaliDaysInMonth(cy,cm);
   for(var d=1;d<=max;d++){
     var b=document.createElement("button");b.type="button";b.className="btn";b.textContent=d;
-    b.onclick=(function(day){
-      return function(){
-        if(window.calTarget){
-          window.calTarget.value=cy+"/"+String(cm).padStart(2,"0")+"/"+String(day).padStart(2,"0");
-          window.calTarget.dispatchEvent(new Event("change",{bubbles:true}));
-        }
-        closeCal();
-      };
-    })(d);
+    b.onclick=(function(day){return function(){setCalendarDate(cy,cm,day);};})(d);
     grid.appendChild(b);
   }
 }
-function calMove(n){
-  cm+=n;
-  if(cm<1){cm=12;cy--}
-  if(cm>12){cm=1;cy++}
-  calRender();
-}
-function closeCal(){var x=document.getElementById("calOverlay");if(x)x.remove();}
-function addMortality(){db.mortality.push({date:val("mDate"),weekday:val("mWeekday"),week:+val("mWeek")||1,hall:+val("mHall"),dead:+val("mDead")||0});save()}
-function addWeight(){db.weights.push({week:+val("wWeek"),hall:+val("wHall"),weight:+val("wWeight")||0,date:val("wDate")});save()}
-function addMedicine(){db.medicine.push({date:val("medDate"),name:val("medName"),qty:val("medQty"),unit:val("medUnit")});save()}
-function addStock(){db.stockIn.push({type:val("stockType"),brand:val("stockBrand"),date:val("stockDate"),qty:+val("stockQty")||0,price:+val("stockPrice")||0});save()}
-function useStock(){db.stockUse.push({type:val("useType"),date:val("useDate"),qty:+val("useQty")||0});save()}
-function addSale(){let full=+val("fullWeight")||0,empty=+val("emptyWeight")||0;db.sales.push({type:val("saleType"),date:val("saleDate"),empty,full,net:+val("netWeight")||Math.max(0,full-empty),ticket:val("ticket"),vehicle:val("vehicle"),plate:val("plate"),driver:val("driver"),phone:val("driverPhone"),buyer:val("buyer"),hall:+val("saleHall"),cages:+val("cages")||0,birdsCage:+val("birdsCage")||0,birds:+val("saleBirds")||0,amount:+val("saleAmount")||0});save()}
-function addPartner(){db.partners.push({name:val("partnerName"),capital:+val("partnerCapital")||0});save()}
-function addCost(){db.costs.push({date:val("costDate"),name:val("costName"),amount:+val("costAmount")||0,partner:val("costPartner")});save()}
-function addReceipt(){db.receipts.push({partner:val("receiptPartner"),from:val("receiptFrom"),amount:+val("receiptAmount")||0,date:val("receiptDate")});save()}
-function val(id){return document.getElementById(id)?.value||""}
-function backup(){let a=document.createElement("a"),blob=new Blob([JSON.stringify({app:"Sepid Goosht",version:"2.0.0",data:db},null,2)],{type:"application/json"});a.href=URL.createObjectURL(blob);a.download="Sepid_Goosht_Backup_"+Date.now()+".json";a.click();URL.revokeObjectURL(a.href)}
-function restore(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);let incoming=x.data||x;db=Object.assign({periods:[],active:null,partners:[],mortality:[],weights:[],medicine:[],stockIn:[],stockUse:[],sales:[],costs:[],receipts:[]},incoming);save();alert("اطلاعات با موفقیت بازیابی شد")}catch(_){alert("فایل Backup معتبر نیست")}};r.readAsText(f)}
-function exportJSON(){backup()}
-function exportCSV(){let rows=[["نوع","تاریخ","مقدار","مبلغ"],...db.sales.map(x=>["فروش "+x.type,x.date,x.net,x.amount]),...db.stockIn.map(x=>["ورود انبار "+x.type,x.date,x.qty,x.price])];let csv=rows.map(r=>r.map(x=>'"'+String(x??"").replace(/"/g,'""')+'"').join(",")).join("\n");let a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"}));a.download="Sepid_Goosht_Report.csv";a.click()}
+function calMove(n){cm+=n;if(cm<1){cm=12;cy--;}if(cm>12){cm=1;cy++;}calRender();}
+function closeCal(){var x=document.getElementById("calOverlay");if(x)x.remove();window.calTarget=null;}
+/* One capture-phase handler handles every current and future date input. */
+document.addEventListener("click",function(e){
+  var el=e.target;
+  if(el&&el.matches&&el.matches('input.jalali,input[data-date],input[placeholder*="تاریخ"],input[type="date"]')){
+    e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+    if(el.type==="date")el.type="text";
+    el.readOnly=true;el.setAttribute("data-jalali","1");pickDate(el);
+  }
+},true);
 function renderAll(){
  const p=active();document.getElementById("dashPeriod").textContent=p?p.name:"دوره‌ای ایجاد نشده";
  document.getElementById("periodSelect").innerHTML='<option value="">انتخاب دوره</option>'+db.periods.map(x=>'<option value="'+x.id+'" '+(x.id===db.active?"selected":"")+'>'+x.name+'</option>').join("");
@@ -322,100 +298,4 @@ document.addEventListener("input",function(e){
   }
 });
 </script>
-<script id="jalali-final-js">
-(function(){
-"use strict";
-var activeInput=null, viewY=1405, viewM=1;
-var monthNames=["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"];
-
-function jalaliToday(){
-  var d=new Date();
-  try{
-    var f=new Intl.DateTimeFormat("en-US-u-ca-persian",{year:"numeric",month:"numeric",day:"numeric"}).formatToParts(d),o={};
-    f.forEach(function(x){if(x.type!=="literal")o[x.type]=Number(x.value)});
-    return {y:o.year,m:o.month,d:o.day};
-  }catch(e){return {y:1405,m:5,d:25}}
-}
-function daysInMonth(y,m){
-  if(m<=6)return 31;
-  if(m<=11)return 30;
-  /* Exact leap-year test by round-tripping through Persian calendar. */
-  try{
-    var a=new Date(y+621,2,19), b=new Intl.DateTimeFormat("en-US-u-ca-persian",{year:"numeric",month:"numeric",day:"numeric"}).formatToParts(a),o={};
-    b.forEach(function(x){if(x.type!=="literal")o[x.type]=Number(x.value)});
-    return o.year===y && o.month===12 ? 30 : 29;
-  }catch(e){return 29}
-}
-function closePicker(){
-  var p=document.getElementById("jalaliPortal");
-  if(p)p.classList.remove("open");
-  activeInput=null;
-}
-function setDate(y,m,d){
-  if(activeInput){
-    activeInput.value=y+"/"+String(m).padStart(2,"0")+"/"+String(d).padStart(2,"0");
-    activeInput.dispatchEvent(new Event("input",{bubbles:true}));
-    activeInput.dispatchEvent(new Event("change",{bubbles:true}));
-  }
-  closePicker();
-}
-function renderPicker(){
-  var title=document.getElementById("jpTitle"),grid=document.getElementById("jpGrid");
-  if(!title||!grid)return;
-  title.textContent=monthNames[viewM-1]+" "+viewY;
-  grid.innerHTML="";
-  for(var d=1;d<=daysInMonth(viewY,viewM);d++){
-    var b=document.createElement("button");
-    b.type="button";b.className="btn";b.textContent=d;
-    b.onclick=(function(day){return function(){setDate(viewY,viewM,day)}})(d);
-    grid.appendChild(b);
-  }
-}
-function moveMonth(n){
-  viewM+=n;
-  if(viewM<1){viewM=12;viewY--}
-  if(viewM>12){viewM=1;viewY++}
-  renderPicker();
-}
-function openPicker(input){
-  activeInput=input;
-  var t=jalaliToday(),v=(input.value||"").match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
-  viewY=v?Number(v[1]):t.y; viewM=v?Number(v[2]):t.m;
-  var p=document.getElementById("jalaliPortal");
-  if(!p){
-    p=document.createElement("div");
-    p.id="jalaliPortal";
-    p.innerHTML='<div class="jp" dir="rtl"><div class="jph"><button type="button" class="btn" id="jpPrev">‹</button><b id="jpTitle"></b><button type="button" class="btn" id="jpNext">›</button></div><div class="jpw"><span>ش</span><span>ی</span><span>د</span><span>س</span><span>چ</span><span>پ</span><span>ج</span></div><div id="jpGrid" class="jpg"></div><div class="jpf"><button type="button" class="btn" id="jpToday">امروز</button><button type="button" class="btn" id="jpClose">بستن</button></div></div>';
-    document.documentElement.appendChild(p);
-    document.getElementById("jpPrev").onclick=function(){moveMonth(-1)};
-    document.getElementById("jpNext").onclick=function(){moveMonth(1)};
-    document.getElementById("jpClose").onclick=closePicker;
-    document.getElementById("jpToday").onclick=function(){var x=jalaliToday();setDate(x.y,x.m,x.d)};
-    p.addEventListener("click",function(e){if(e.target===p)closePicker()});
-  }
-  p.classList.add("open");
-  renderPicker();
-}
-window.openJalaliPicker=openPicker;
-window.closeJalaliPicker=closePicker;
-window.pickDate=openPicker;
-
-/* One delegated handler, capture phase, so no parent modal can steal the click. */
-document.addEventListener("click",function(e){
-  var el=e.target;
-  if(el && el.matches && el.matches('input[type="date"],input[data-date],input.jalali,input[data-jalali],input[placeholder*="تاریخ"]')){
-    e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
-    if(el.type==="date")el.type="text";
-    el.readOnly=true;el.setAttribute("data-jalali","1");
-    openPicker(el);
-  }
-},true);
-
-document.addEventListener("DOMContentLoaded",function(){
-  document.querySelectorAll('input[type="date"],input[data-date],input.jalali,input[placeholder*="تاریخ"]').forEach(function(el){
-    if(el.type==="date")el.type="text";
-    el.readOnly=true;el.setAttribute("data-jalali","1");
-  });
-});
-})();
-</script></body></html>
+</body></html>
