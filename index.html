@@ -120,7 +120,7 @@ main{flex:1;padding:18px;max-width:1400px;margin:auto;width:100%}.page{display:n
 </main></div></div>
 
 <dialog id="periodDialog" style="background:#111a23;color:#edf2f7;border:1px solid #344354;border-radius:15px;width:min(900px,96vw);max-height:90vh;overflow:auto"></dialog>
-<div id="calModal" class="jalali-modal" style="display:none"><div class="jalali-box"><div class="pcal-head"><button class="btn" onclick="calMove(-1)">‹</button><b id="calTitle"></b><button class="btn" onclick="calMove(1)">›</button></div><div id="calGrid" class="pcal-grid"></div><div class="actions"><button class="btn" onclick="closeCal()">انصراف</button></div></div></div>
+<div id="calGrid" class="pcal-grid"></div><div class="actions"><button class="btn" onclick="closeCal()">انصراف</button></div></div></div>
 
 <script>
 const KEY="sepid_goosht_v2";
@@ -204,14 +204,14 @@ function pickDate(el){
   (host||document.documentElement).appendChild(ov);
   var t=getTodayJalali(),v=(el.value||"").match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
   cy=v?+v[1]:t.y;cm=v?+v[2]:t.m;
-  document.getElementById("calPrev").onclick=function(){calMove(-1);};
-  document.getElementById("calNext").onclick=function(){calMove(1);};
-  document.getElementById("calCancel").onclick=closeCal;
-  document.getElementById("calToday").onclick=function(){setCalendarDate(t.y,t.m,t.d);};
+  ov.querySelector("#calPrev").onclick=function(){calMove(-1);};
+  ov.querySelector("#calNext").onclick=function(){calMove(1);};
+  ov.querySelector("#calCancel").onclick=closeCal;
+  ov.querySelector("#calToday").onclick=function(){setCalendarDate(t.y,t.m,t.d);};
   calRender();
 }
 function calRender(){
-  var title=document.getElementById("calTitle"),grid=document.getElementById("calGrid");if(!title||!grid)return;
+  var root=document.getElementById("calOverlay");if(!root)return;var title=root.querySelector("#calTitle"),grid=root.querySelector("#calGrid");if(!title||!grid)return;
   title.textContent=jalaliMonthName(cm)+" "+cy;grid.innerHTML="";
   /* Saturday is column 0. Convert the exact Jalali first day to Gregorian, then use JS weekday. */
   var offset=(jalaliToGregorian(cy,cm,1).getDay()+1)%7;
