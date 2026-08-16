@@ -120,7 +120,6 @@ main{flex:1;padding:18px;max-width:1400px;margin:auto;width:100%}.page{display:n
 </main></div></div>
 
 <dialog id="periodDialog" style="background:#111a23;color:#edf2f7;border:1px solid #344354;border-radius:15px;width:min(900px,96vw);max-height:90vh;overflow:auto"></dialog>
-<div id="calGrid" class="pcal-grid"></div><div class="actions"><button class="btn" onclick="closeCal()">انصراف</button></div></div></div>
 
 <script>
 const KEY="sepid_goosht_v2";
@@ -196,7 +195,7 @@ function pickDate(el){
   var old=document.getElementById("calOverlay");if(old)old.remove();
   var ov=document.createElement("div");ov.id="calOverlay";ov.className="jalali-modal";
   var box=document.createElement("div");box.className="jalali-box";
-  box.innerHTML='<div class="pcal-head"><button type="button" class="btn" id="calPrev">‹</button><b id="calTitle"></b><button type="button" class="btn" id="calNext">›</button></div><div class="pcal-week"><span>ش</span><span>ی</span><span>د</span><span>س</span><span>چ</span><span>پ</span><span>ج</span></div><div id="calGrid" class="pcal-grid"></div><div class="actions"><button type="button" class="btn" id="calToday">امروز</button><button type="button" class="btn" id="calCancel">انصراف</button></div>';
+  box.innerHTML='<div class="pcal-head"><button type="button" class="btn" id="calPrev">‹</button><b data-cal-title></b><button type="button" class="btn" id="calNext">›</button></div><div class="pcal-week"><span>ش</span><span>ی</span><span>د</span><span>س</span><span>چ</span><span>پ</span><span>ج</span></div><div data-cal-grid class="pcal-grid"></div><div class="actions"><button type="button" class="btn" id="calToday">امروز</button><button type="button" class="btn" id="calCancel">انصراف</button></div>';
   ov.appendChild(box);
   /* A native <dialog> is in the browser top layer. Mounting the picker inside that dialog
      keeps the picker in the same top layer, fixing the old "under the page" bug. */
@@ -211,7 +210,7 @@ function pickDate(el){
   calRender();
 }
 function calRender(){
-  var root=document.getElementById("calOverlay");if(!root)return;var title=root.querySelector("#calTitle"),grid=root.querySelector("#calGrid");if(!title||!grid)return;
+  var root=document.getElementById("calOverlay");if(!root)return;var title=root.querySelector("[data-cal-title]"),grid=root.querySelector("[data-cal-grid]");if(!title||!grid)return;
   title.textContent=jalaliMonthName(cm)+" "+cy;grid.innerHTML="";
   /* Saturday is column 0. Convert the exact Jalali first day to Gregorian, then use JS weekday. */
   var offset=(jalaliToGregorian(cy,cm,1).getDay()+1)%7;
