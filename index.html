@@ -30,6 +30,11 @@ main{flex:1;padding:18px;max-width:1400px;margin:auto;width:100%}.page{display:n
 .jp-week,.jp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
 .jp-week{text-align:center;color:#9eacbc;font-size:12px}
 .jp-day{min-height:42px}
+</style><style id="calendar-layer-fix">
+#jalaliPickerOverlay{position:fixed!important;inset:0!important;z-index:2147483647!important;transform:none!important;filter:none!important;contain:none!important;pointer-events:auto!important}
+#jalaliPicker{position:relative!important;z-index:2147483647!important;pointer-events:auto!important}
+#jalaliPicker .jp-day,#jalaliPicker #jpPrev,#jalaliPicker #jpNext,#jalaliPicker #jpToday,#jalaliPicker #jpClose{position:relative!important;z-index:2147483648!important;pointer-events:auto!important}
+#periodDialog[open]{z-index:1000!important}
 </style></head>
 <body>
 <div class="app">
@@ -195,7 +200,7 @@ function pickDate(el){
     '<div class="pcal-week"><span>ش</span><span>ی</span><span>د</span><span>س</span><span>چ</span><span>پ</span><span>ج</span></div>'+
     '<div id="calGrid" class="pcal-grid"></div>'+
     '<div class="actions"><button type="button" class="btn" id="calToday">امروز</button><button type="button" class="btn" id="calCancel">انصراف</button></div>';
-  ov.appendChild(box);document.body.appendChild(ov);
+  ov.appendChild(box);document.documentElement.appendChild(ov);
 
   var today=getTodayJalali(),existing=(el.value||"").match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
   if(existing){cy=+existing[1];cm=+existing[2]}else{cy=today.y;cm=today.m}
@@ -329,7 +334,7 @@ function close(){var x=document.getElementById("jalaliPickerOverlay");if(x)x.rem
 function pick(y,m,d){if(target){target.value=y+"/"+String(m).padStart(2,"0")+"/"+String(d).padStart(2,"0");target.dispatchEvent(new Event("change",{bubbles:true}));target.dispatchEvent(new Event("input",{bubbles:true}))}close()}
 function render(){var t=document.getElementById("jpTitle"),g=document.getElementById("jpGrid");if(!t||!g)return;t.textContent=months[mm-1]+" "+yy;g.innerHTML="";for(var d=1;d<=md(mm);d++){var b=document.createElement("button");b.type="button";b.className="btn jp-day";b.textContent=d;b.onclick=(function(x){return function(){pick(yy,mm,x)}})(d);g.appendChild(b)}}
 function move(n){mm+=n;if(mm<1){mm=12;yy--}if(mm>12){mm=1;yy++}render()}
-function show(el){target=el;var t=today(),v=(el.value||"").match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);yy=v?+v[1]:t.y;mm=v?+v[2]:t.m;var old=document.getElementById("jalaliPickerOverlay");if(old)old.remove();var o=document.createElement("div");o.id="jalaliPickerOverlay";o.innerHTML='<div id="jalaliPicker" dir="rtl"><div class="jp-head"><button type="button" class="btn" id="jpPrev">‹</button><b id="jpTitle"></b><button type="button" class="btn" id="jpNext">›</button></div><div class="jp-week"><span>ش</span><span>ی</span><span>د</span><span>س</span><span>چ</span><span>پ</span><span>ج</span></div><div id="jpGrid" class="jp-grid"></div><div class="jp-foot"><button type="button" class="btn" id="jpToday">امروز</button><button type="button" class="btn" id="jpClose">بستن</button></div></div>';document.body.appendChild(o);document.getElementById("jpPrev").onclick=function(){move(-1)};document.getElementById("jpNext").onclick=function(){move(1)};document.getElementById("jpClose").onclick=close;document.getElementById("jpToday").onclick=function(){var x=today();pick(x.y,x.m,x.d)};render()}
+function show(el){target=el;var t=today(),v=(el.value||"").match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);yy=v?+v[1]:t.y;mm=v?+v[2]:t.m;var old=document.getElementById("jalaliPickerOverlay");if(old)old.remove();var o=document.createElement("div");o.id="jalaliPickerOverlay";o.innerHTML='<div id="jalaliPicker" dir="rtl"><div class="jp-head"><button type="button" class="btn" id="jpPrev">‹</button><b id="jpTitle"></b><button type="button" class="btn" id="jpNext">›</button></div><div class="jp-week"><span>ش</span><span>ی</span><span>د</span><span>س</span><span>چ</span><span>پ</span><span>ج</span></div><div id="jpGrid" class="jp-grid"></div><div class="jp-foot"><button type="button" class="btn" id="jpToday">امروز</button><button type="button" class="btn" id="jpClose">بستن</button></div></div>';document.documentElement.appendChild(o);document.getElementById("jpPrev").onclick=function(){move(-1)};document.getElementById("jpNext").onclick=function(){move(1)};document.getElementById("jpClose").onclick=close;document.getElementById("jpToday").onclick=function(){var x=today();pick(x.y,x.m,x.d)};render()}
 window.openJalaliPicker=show;window.closeJalaliPicker=close;window.pickDate=function(el){show(el)};
 document.addEventListener("click",function(e){var el=e.target;if(el&&el.matches&&el.matches('input[type="date"],input.jalali,input[data-date],input[placeholder*="تاریخ"],input[data-jalali]')){e.preventDefault();e.stopPropagation();if(el.type==="date")el.type="text";el.readOnly=true;el.setAttribute("data-jalali","1");show(el)}},true);
 document.addEventListener("DOMContentLoaded",function(){document.querySelectorAll('input[type="date"],input.jalali,input[data-date],input[placeholder*="تاریخ"]').forEach(function(el){if(el.type==="date")el.type="text";el.readOnly=true;el.setAttribute("data-jalali","1")})});
