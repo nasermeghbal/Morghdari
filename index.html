@@ -178,9 +178,30 @@ function jalaliToGregorian(y,m,d){
   }
   return approx;
 }
+
+function jalaliToDayNumber(jy,jm,jd){
+  var epbase=jy-(jy>=0?474:473),epyear=474+(epbase%2820);
+  return jd+(jm<=7?(jm-1)*31:(jm-1)*30+6)
+    +Math.floor((epyear*682-110)/2816)+(epyear-1)*365
+    +Math.floor(epbase/2820)*1029983+1948319;
+}
+function isJalaliLeapYear(y){
+  return jalaliToDayNumber(y+1,1,1)-jalaliToDayNumber(y,1,1)===366;
+}
+function jalaliWeekdayIndex(y,m,d){
+  var j=jalaliToDayNumber(y,m,d)+68569,n=Math.floor((4*j)/146097);
+  j=j-Math.floor((146097*n+3)/4);
+  var gy=Math.floor((4000*(j+1))/1461001);
+  j=j-Math.floor((1461*gy)/4)+31;
+  var gm=Math.floor((80*j)/2447),gd=j-Math.floor((2447*gm)/80);
+  j=Math.floor(gm/11); gm=gm+2-12*j; gy=100*(n-49)+gy+j;
+  return (new Date(gy,gm-1,gd).getDay()+1)%7;
+}
+
 function jalaliDaysInMonth(y,m){
-  var first=jalaliToGregorian(y,m,1),next=(m===12)?jalaliToGregorian(y+1,1,1):jalaliToGregorian(y,m+1,1);
-  return Math.round((next-first)/86400000);
+  if(m>=1 && m<=6) return 31;
+  if(m>=7 && m<=11) return 30;
+  return isJalaliLeapYear(y) ? 30 : 29;
 }
 var cy=1405,cm=1;
 function setCalendarDate(y,m,d){
@@ -214,7 +235,7 @@ function calRender(){
   var title=document.getElementById("calTitle"),grid=document.getElementById("calGrid");if(!title||!grid)return;
   title.textContent=jalaliMonthName(cm)+" "+cy;grid.innerHTML="";
   /* Saturday is column 0. Convert the exact Jalali first day to Gregorian, then use JS weekday. */
-  var offset=(jalaliToGregorian(cy,cm,1).getDay()+1)%7;
+  var offset=jalaliWeekdayIndex(cy,cm,1);
   for(var i=0;i<offset;i++){var blank=document.createElement("span");blank.className="calblank";grid.appendChild(blank);}
   var max=jalaliDaysInMonth(cy,cm);
   for(var d=1;d<=max;d++){
