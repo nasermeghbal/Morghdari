@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>سپید گوشت | مدیریت مرغداری</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:#0b1016;color:#edf2f7}
+button,input,select,textarea{font:inherit}button{cursor:pointer}.app{min-height:100vh}.top{position:sticky;top:0;z-index:20;background:#111821;border-bottom:1px solid #283442;padding:14px 18px}
+.brand{font-size:22px;font-weight:800}.sub{font-size:12px;color:#91a0b2;margin-top:4px}.bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.btn{background:#202b38;color:#fff;border:1px solid #344354;border-radius:10px;padding:9px 12px}.primary{background:#1f7a55;border-color:#2a9b6c}.danger{background:#702c36}
+.layout{display:flex;min-height:calc(100vh - 112px)}aside{width:230px;background:#0f151d;border-left:1px solid #26313e;padding:12px;position:sticky;top:112px;height:calc(100vh - 112px);overflow:auto}
+.nav{display:flex;flex-direction:column;gap:7px}.nav button{text-align:right;background:#161f29;color:#dce5ef;border:1px solid transparent;border-radius:10px;padding:11px}.nav button.active{border-color:#2b9a6c;background:#182d27}
+main{flex:1;padding:18px;max-width:1400px;margin:auto;width:100%}.page{display:none}.page.active{display:block}.title{font-size:22px;font-weight:800;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.card{background:#111a23;border:1px solid #293746;border-radius:15px;padding:15px}.muted{color:#91a0b2;font-size:12px}.num{font-size:26px;font-weight:800;margin-top:7px}.section{margin:18px 0}.section h3{margin:0 0 10px}.tablewrap{overflow:auto;border:1px solid #293746;border-radius:13px}.table{width:100%;border-collapse:collapse;min-width:720px}.table th,.table td{padding:10px;border-bottom:1px solid #273442;text-align:right;white-space:nowrap}.table th{background:#17212c}.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}.field label{display:block;color:#9eacbb;font-size:12px;margin-bottom:5px}.field input,.field select,.field textarea{width:100%;background:#0c131a;color:#fff;border:1px solid #354456;border-radius:9px;padding:10px}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.empty{padding:28px;text-align:center;color:#91a0b2}.progress{height:10px;background:#25303c;border-radius:20px;overflow:hidden}.progress>i{display:block;height:100%;background:#2a9b6c}.pill{display:inline-block;padding:4px 8px;border-radius:99px;background:#1b2936;font-size:11px}
+@media(max-width:800px){.layout{display:block}aside{width:100%;height:auto;position:sticky;top:112px;z-index:15}.nav{display:grid;grid-template-columns:repeat(4,1fr)}.nav button{font-size:11px}.top{position:relative}main{padding:12px}}
+
+.jalali-modal{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.82);padding:14px}
+.jalali-box{background:#111a23;color:#edf2f7;border:1px solid #344354;border-radius:15px;padding:18px;width:min(900px,96vw);max-height:90vh;overflow:auto}
+.pcal-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.pcal-week,.pcal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+.pcal-week{margin-bottom:7px;text-align:center;color:#91a0b2;font-size:12px}
+.pcal-grid button{min-height:42px}
+.calblank{min-height:42px}
+</style>
+<style id="jalali-calendar-final-css">#calOverlay{position:fixed!important;inset:0!important;z-index:2147483647!important;display:flex!important;align-items:center!important;justify-content:center!important;background:rgba(0,0,0,.84)!important;padding:14px!important;box-sizing:border-box!important;pointer-events:auto!important}#calOverlay .jalali-box{max-height:90vh;overflow:auto;pointer-events:auto!important;position:relative!important;z-index:2147483648!important}#calOverlay button{touch-action:manipulation!important;pointer-events:auto!important}</style></head>
+<body>
+<div class="app">
+<header class="top">
+  <div class="brand">🐔 سپید گوشت</div>
+  <div class="sub">نرم‌افزار حرفه‌ای مدیریت مرغداری — Version 2.0.0 — Developed by Naser Jafarzadeh</div>
+  <div class="bar">
+    <button id="newPeriodBtn" class="btn primary" type="button">➕ ایجاد دوره جدید</button>
+    <select id="periodSelect" class="btn" onchange="switchPeriod(this.value)"><option value="">انتخاب دوره</option></select>
+    <button class="btn" onclick="backup()">💾 Backup</button>
+    <button class="btn" onclick="document.getElementById('restore').click()">♻️ Restore</button>
+    <input id="restore" type="file" accept=".json" hidden onchange="restore(event)">
+  </div>
+</header>
+<div class="layout">
+<aside><div class="nav">
+<button data-page="dashboard" onclick="go('dashboard')">🏠 داشبورد</button>
+<button data-page="period" onclick="go('period')">📅 دوره‌ها</button>
+<button data-page="flock" onclick="go('flock')">🐔 گله و تلفات</button>
+<button data-page="feed" onclick="go('feed')">🌾 انبار و دان</button>
+<button data-page="sales" onclick="go('sales')">⚖️ فروش</button>
+<button data-page="finance" onclick="go('finance')">💰 مالی</button>
+<button data-page="partners" onclick="go('partners')">🤝 شرکا</button>
+<button data-page="reports" onclick="go('reports')">📊 گزارش‌ها</button>
+</div></aside>
+<main>
+<section id="dashboard" class="page active"><div class="title">صبح بخیر 🌤️</div>
+<div class="grid">
+<div class="card"><div class="muted">تاریخ امروز</div><div class="num" id="today">—</div></div>
+<div class="card"><div class="muted">دوره فعال</div><div class="num" id="dashPeriod">—</div></div>
+<div class="card"><div class="muted">موجودی کل گله</div><div class="num" id="dashBirds">0</div></div>
+<div class="card"><div class="muted">دان مصرفی کل</div><div class="num" id="dashFeed">0 کیلو</div></div>
+<div class="card"><div class="muted">تلفات کل</div><div class="num" id="dashMort">0</div></div>
+<div class="card"><div class="muted">درصد تلفات کل</div><div class="num" id="dashMortPct">0%</div></div>
+<div class="card"><div class="muted">تلفات هفته اول</div><div class="num" id="dashWeek1">0</div></div>
+<div class="card"><div class="muted">درصد بقا</div><div class="num" id="dashSurvival">100%</div></div>
+</div>
+<div class="section"><h3>ضریب گله</h3><div class="grid" id="hallCards"></div></div>
+<div class="section"><h3>وضعیت سالن‌ها</h3><div class="tablewrap"><table class="table"><thead><tr><th>سالن</th><th>تاریخ ورود</th><th>موجودی</th><th>تلفات</th><th>درصد تلفات</th><th>میانگین وزن</th><th>ضریب</th></tr></thead><tbody id="hallTable"></tbody></table></div></div>
+<div class="section"><h3>هواشناسی روزانه — کاشمر، خراسان رضوی</h3><div class="card">برای نسخه محلی فعلی، وضعیت هوا در این بخش آماده اتصال به سرویس آنلاین است.</div></div>
+</section>
+
+<section id="period" class="page"><div class="title">مدیریت دوره‌ها</div><div class="card"><p>دوره‌های گذشته و دوره فعال در این بخش مدیریت می‌شوند.</p><div id="periodList"></div></div></section>
+
+<section id="flock" class="page"><div class="title">گله و تلفات</div>
+<div class="section card"><h3>ثبت تلفات روزانه</h3><div class="formgrid">
+<div class="field"><label>تاریخ شمسی</label><input id="mDate" class="jalali" readonly onclick="pickDate(this)"></div>
+<div class="field"><label>روز هفته</label><select id="mWeekday"><option>شنبه</option><option>یکشنبه</option><option>دوشنبه</option><option>سه‌شنبه</option><option>چهارشنبه</option><option>پنجشنبه</option><option>جمعه</option></select></div>
+<div class="field"><label>سالن</label><select id="mHall"><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+<div class="field"><label>هفته گله</label><input id="mWeek" type="number" min="1" value="1"></div><div class="field"><label>تلفات</label><input id="mDead" type="number" min="0"></div>
+</div><div class="actions"><button class="btn primary" onclick="addMortality()">ثبت تلفات</button></div></div>
+<div class="section card"><h3>ثبت میانگین وزن هفتگی هر سالن</h3><div class="formgrid">
+<div class="field"><label>هفته</label><input id="wWeek" type="number" min="1"></div>
+<div class="field"><label>سالن</label><select id="wHall"><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+<div class="field"><label>میانگین وزن (کیلوگرم)</label><input id="wWeight" type="number" step="0.001"></div>
+<div class="field"><label>تاریخ شمسی</label><input id="wDate" class="jalali" readonly onclick="pickDate(this)"></div>
+</div><div class="actions"><button class="btn primary" onclick="addWeight()">ثبت وزن هفتگی</button></div></div>
+<div class="section card"><h3>دارو و واکسن</h3><div class="formgrid"><div class="field"><label>تاریخ شمسی</label><input id="medDate" class="jalali" readonly onclick="pickDate(this)"></div><div class="field"><label>نام دارو/واکسن</label><input id="medName"></div><div class="field"><label>مقدار</label><input id="medQty"></div><div class="field"><label>واحد</label><input id="medUnit" placeholder="لیتر/کیلو/دوز"></div></div><div class="actions"><button class="btn primary" onclick="addMedicine()">ثبت</button></div></div>
+<div class="tablewrap"><table class="table"><thead><tr><th>تاریخ</th><th>هفته</th><th>سالن</th><th>تلفات</th><th>عملیات</th></tr></thead><tbody id="mortTable"></tbody></table></div>
+</section>
+
+<section id="feed" class="page"><div class="title">انبار و دان</div>
+<div class="grid"><div class="card"><div class="muted">موجودی فعلی انبار</div><div class="num" id="stockTotal">0 کیلو</div></div><div class="card"><div class="muted">مجموع مصرفی</div><div class="num" id="stockUsed">0 کیلو</div></div></div>
+<div class="section card"><h3>ورود به انبار</h3><div class="formgrid"><div class="field"><label>نوع کالا</label><input id="stockType" placeholder="ذرت، سویا، کنسانتره، روغن، صدف، جوش شیرین، نمک، ضدککسیدیوز، توکسین بایندر، دان آماده..."></div><div class="field"><label>برند</label><input id="stockBrand"></div><div class="field"><label>تاریخ شمسی</label><input id="stockDate" class="jalali" readonly onclick="pickDate(this)"></div><div class="field"><label>وزن (کیلوگرم)</label><input id="stockQty" type="number"></div><div class="field"><label>قیمت کل (ریال)</label><input id="stockPrice" type="number"></div></div><div class="actions"><button class="btn primary" onclick="addStock()">ثبت ورود</button></div></div>
+<div class="section card"><h3>مصرف از انبار</h3><div class="formgrid"><div class="field"><label>نوع کالا</label><select id="useType"></select></div><div class="field"><label>تاریخ شمسی</label><input id="useDate" class="jalali" readonly onclick="pickDate(this)"></div><div class="field"><label>مقدار مصرف (کیلوگرم)</label><input id="useQty" type="number"></div></div><div class="actions"><button class="btn primary" onclick="useStock()">ثبت مصرف</button></div></div>
+</section>
+
+<section id="sales" class="page"><div class="title">فروش</div>
+<div class="section card"><h3>ثبت فروش</h3><div class="formgrid">
+<div class="field"><label>نوع فروش</label><select id="saleType"><option>مرغ زنده</option><option>کود</option></select></div>
+<div class="field"><label>تاریخ شمسی</label><input id="saleDate" class="jalali" readonly onclick="pickDate(this)"></div>
+<div class="field"><label>وزن خالی ماشین (کیلو)</label><input id="emptyWeight" type="number"></div>
+<div class="field"><label>وزن پر ماشین (کیلو)</label><input id="fullWeight" type="number"></div>
+<div class="field"><label>وزن خالص (کیلو)</label><input id="netWeight" type="number" readonly></div>
+<div class="field"><label>شماره قبض</label><input id="ticket"></div>
+<div class="field"><label>نوع خودرو</label><input id="vehicle"></div>
+<div class="field"><label>پلاک</label><input id="plate"></div>
+<div class="field"><label>راننده</label><input id="driver"></div>
+<div class="field"><label>شماره تماس راننده</label><input id="driverPhone"></div>
+<div class="field"><label>مقصد/خریدار</label><input id="buyer"></div>
+<div class="field"><label>شماره سالن</label><select id="saleHall"><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+<div class="field"><label>تعداد قفس</label><input id="cages" type="number"></div>
+<div class="field"><label>تعداد مرغ در هر قفس</label><input id="birdsCage" type="number"></div>
+<div class="field"><label>تعداد کل مرغ</label><input id="saleBirds" type="number"></div>
+<div class="field"><label>مبلغ فروش (ریال)</label><input id="saleAmount" type="number"></div>
+</div><div class="actions"><button class="btn primary" onclick="addSale()">ثبت فروش</button></div></div>
+<div class="grid"><div class="card"><div class="muted">تعداد کل بارگیری</div><div class="num" id="loads">0</div></div><div class="card"><div class="muted">تناژ کل بارگیری</div><div class="num" id="tonnage">0</div></div><div class="card"><div class="muted">مقدار فروش مرغ</div><div class="num" id="chickenSales">0</div></div><div class="card"><div class="muted">مقدار فروش کود</div><div class="num" id="manureSales">0</div></div></div>
+</section>
+
+<section id="finance" class="page"><div class="title">مالی</div><div class="card"><h3>ثبت هزینه</h3><div class="formgrid"><div class="field"><label>تاریخ شمسی</label><input id="costDate" class="jalali" readonly onclick="pickDate(this)"></div><div class="field"><label>شرح هزینه</label><input id="costName"></div><div class="field"><label>مبلغ (ریال)</label><input id="costAmount" type="number"></div><div class="field"><label>شریک</label><select id="costPartner"></select></div></div><div class="actions"><button class="btn primary" onclick="addCost()">ثبت هزینه</button></div></div><div class="tablewrap"><table class="table"><thead><tr><th>تاریخ</th><th>شرح</th><th>شریک</th><th>مبلغ ریال</th><th>عملیات</th></tr></thead><tbody id="costTable"></tbody></table></div></section>
+
+<section id="partners" class="page"><div class="title">شرکا و آورده اولیه</div><div class="card"><div class="formgrid"><div class="field"><label>نام شریک</label><input id="partnerName"></div><div class="field"><label>آورده اولیه (ریال)</label><input id="partnerCapital" type="number"></div></div><div class="actions"><button class="btn primary" onclick="addPartner()">ثبت شریک</button></div></div><div class="tablewrap"><table class="table"><thead><tr><th>شریک</th><th>آورده اولیه ریال</th><th>عملیات</th></tr></thead><tbody id="partnerTable"></tbody></table></div><div class="section card"><h3>دریافتی‌ها</h3><div class="formgrid"><div class="field"><label>شریک گیرنده</label><select id="receiptPartner"></select></div><div class="field"><label>دریافت از</label><input id="receiptFrom"></div><div class="field"><label>مبلغ (ریال)</label><input id="receiptAmount" type="number"></div><div class="field"><label>تاریخ شمسی</label><input id="receiptDate" class="jalali" readonly onclick="pickDate(this)"></div></div><div class="actions"><button class="btn primary" onclick="addReceipt()">ثبت دریافتی</button></div></div></section>
+
+<section id="reports" class="page"><div class="title">گزارش‌ها</div><div class="card section"><b>کنترل نسخه</b><p class="muted">دوره‌ها، ۴ سالن، تقویم شمسی، گله و تلفات، وزن هفتگی، انبار و مصرف، فروش مرغ/کود، باسکول، مالی، شرکا، Backup/Restore و خروجی گزارش فعال هستند.</p></div><div class="grid"><div class="card"><h3>گزارش دوره</h3><p class="muted">تلفات، دان، وزن، ضریب، فروش، هزینه و سهم شرکا.</p><button class="btn" onclick="exportJSON()">خروجی اطلاعات</button></div><div class="card"><h3>خروجی Excel</h3><p class="muted">برای نسخه بعدی خروجی جدولی کامل قابل توسعه است.</p><button class="btn" onclick="exportCSV()">خروجی CSV قابل باز شدن با Excel</button></div><div class="card"><h3>گزارش چاپی</h3><button class="btn" onclick="window.print()">چاپ / PDF</button></div></div></section>
+</main></div></div>
+
+<dialog id="periodDialog" style="background:#111a23;color:#edf2f7;border:1px solid #344354;border-radius:15px;width:min(900px,96vw);max-height:90vh;overflow:auto"></dialog>
+<div id="calModal" class="jalali-modal" style="display:none"><div class="jalali-box"><div class="pcal-head"><button class="btn" onclick="calMove(-1)">‹</button><b id="calTitle"></b><button class="btn" onclick="calMove(1)">›</button></div><div id="calGrid" class="pcal-grid"></div><div class="actions"><button class="btn" onclick="closeCal()">انصراف</button></div></div></div>
+
+<script>
+const KEY="sepid_goosht_v2";
+let db=JSON.parse(localStorage.getItem(KEY)||'null')||{periods:[],active:null,partners:[],mortality:[],weights:[],medicine:[],stockIn:[],stockUse:[],sales:[],costs:[],receipts:[]};
+function save(){localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
+function active(){return db.periods.find(p=>p.id===db.active)}
+function go(id){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll(".nav button").forEach(x=>x.classList.toggle("active",x.dataset.page===id))}
+function openNewPeriod(){
+ const m=document.getElementById("periodDialog");
+ m.innerHTML=
+ '<h3>➕ ایجاد دوره جدید</h3>'+
+ '<div class="field"><label>نام دوره</label><input id="pn" placeholder="مثلاً دوره ۱۴۰۵/۰۵"></div>'+
+ '<p class="muted">برای هر سالن اطلاعات اولیه را جداگانه وارد کنید.</p>'+
+ '<div class="grid">'+[1,2,3,4].map(function(i){
+ return '<div class="card"><b>سالن '+i+'</b>'+
+ '<div class="field"><label>تعداد جوجه ورودی</label><input id="pi'+i+'" type="number" min="0"></div>'+
+ '<div class="field"><label>تلفات مسیر</label><input id="pl'+i+'" type="number" min="0" value="0"></div>'+
+ '<div class="field"><label>میانگین وزن اولیه</label><input id="pw'+i+'" type="number" min="0" step="0.001"></div>'+
+ '<div class="field"><label>تاریخ جوجه‌ریزی شمسی</label><input id="pd'+i+'" class="jalali" readonly placeholder="انتخاب تاریخ"></div>'+
+ '</div>';}).join("")+
+ '</div><div class="actions"><button id="periodCancel" class="btn" type="button">انصراف</button><button id="periodSave" class="btn primary" type="button">ثبت دوره</button></div>';
+ m.showModal();
+ [1,2,3,4].forEach(function(i){
+   document.getElementById("pd"+i).addEventListener("click",function(){pickDate(this);});
+ });
+ document.getElementById("periodCancel").addEventListener("click",function(){m.close();});
+ document.getElementById("periodSave").addEventListener("click",savePeriod);
+}
+function closePeriod(){var m=document.getElementById("periodDialog");if(m&&m.open)m.close()}
+function openEditPeriod(id){
+ const p=db.periods.find(function(x){return x.id===id});if(!p)return;
+ const m=document.getElementById("periodDialog");
+ let html='<h3>✏️ ویرایش دوره</h3><div class="field"><label>نام دوره</label><input id="epn"></div><p class="muted">اطلاعات هر سالن، تلفات مسیر، وزن و تاریخ قابل ویرایش است.</p><div class="grid">';
+ html=html.replace('id="epn">','id="epn" value="'+(p.name||'').replace(/"/g,'&quot;')+'">');
+ [1,2,3,4].forEach(function(i){const h=p.halls.find(function(x){return x.hall===i})||{initial:0,routeMortality:0,weight:0,date:''};html+='<div class="card"><b>سالن '+i+'</b><div class="field"><label>تعداد جوجه ورودی</label><input id="epi'+i+'" type="number" min="0" value="'+(h.initial||0)+'"></div><div class="field"><label>تلفات مسیر</label><input id="epl'+i+'" type="number" min="0" value="'+(h.routeMortality||0)+'"></div><div class="field"><label>میانگین وزن اولیه</label><input id="epw'+i+'" type="number" min="0" step="0.001" value="'+(h.weight||0)+'"></div><div class="field"><label>تاریخ جوجه‌ریزی شمسی</label><input id="epd'+i+'" class="jalali" readonly value="'+(h.date||'')+'"></div></div>';});
+ html+='</div><div class="actions"><button id="periodEditCancel" class="btn" type="button">انصراف</button><button id="periodEditSave" class="btn primary" type="button">ذخیره تغییرات</button></div>';
+ m.innerHTML=html;m.showModal();
+ [1,2,3,4].forEach(function(i){document.getElementById('epd'+i).onclick=function(){pickDate(this)}});
+ document.getElementById('periodEditCancel').onclick=function(){m.close()};
+ document.getElementById('periodEditSave').onclick=function(){
+   const name=document.getElementById('epn').value.trim();if(!name){alert('نام دوره را وارد کنید');return}
+   for(let i=1;i<=4;i++){const h=p.halls.find(function(x){return x.hall===i});const initial=+document.getElementById('epi'+i).value||0,loss=+document.getElementById('epl'+i).value||0,date=document.getElementById('epd'+i).value,weight=+document.getElementById('epw'+i).value||0;if(!date){alert('تاریخ سالن '+i+' را وارد کنید');return}if(loss>initial){alert('تلفات مسیر سالن '+i+' بیشتر از ورودی است');return}h.initial=initial;h.routeMortality=loss;h.current=Math.max(0,initial-loss);h.date=date;h.weight=weight;}
+   p.name=name;db.active=p.id;save();m.close();
+ };
+}
+function savePeriod(){
+ const name=document.getElementById("pn").value.trim();if(!name){alert("نام دوره را وارد کنید");return}
+ const halls=[];
+ for(let i=1;i<=4;i++){const initial=+document.getElementById("pi"+i).value||0,loss=+document.getElementById("pl"+i).value||0,date=document.getElementById("pd"+i).value;if(!date){alert("تاریخ سالن "+i+" را وارد کنید");return}if(loss>initial){alert("تلفات مسیر سالن "+i+" بیشتر از ورودی است");return}halls.push({hall:i,initial,routeMortality:loss,current:initial-loss,weight:+document.getElementById("pw"+i).value||0,date})}
+ const p={id:Date.now().toString(),name,halls,created:new Date().toISOString()};db.periods.push(p);db.active=p.id;save();closePeriod();alert("دوره جدید ایجاد شد")}
+function switchPeriod(id){if(id){db.active=id;save()}}
+
+function getTodayJalali(){
+  try{
+    var p=new Intl.DateTimeFormat("en-US-u-ca-persian",{year:"numeric",month:"numeric",day:"numeric"}).formatToParts(new Date()),o={};
+    p.forEach(function(x){if(x.type!=="literal")o[x.type]=+x.value;});
+    return {y:o.year,m:o.month,d:o.day};
+  }catch(e){return {y:1405,m:5,d:25};}
+}
+function jalaliMonthName(m){return ["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"][m-1];}
+function persianParts(date){
+  var p=new Intl.DateTimeFormat("en-US-u-ca-persian",{year:"numeric",month:"numeric",day:"numeric"}).formatToParts(date),o={};
+  p.forEach(function(x){if(x.type!=="literal")o[x.type]=+x.value;});
+  return o;
+}
+function jalaliToGregorian(y,m,d){
+  var approx=new Date(y+621,2,20);
+  for(var k=-25;k<=45;k++){
+    var g=new Date(approx.getFullYear(),approx.getMonth(),approx.getDate()+k),q=persianParts(g);
+    if(q.year===y&&q.month===m&&q.day===d)return g;
+  }
+  return approx;
+}
+
+function jalaliToDayNumber(jy,jm,jd){
+  var epbase=jy-(jy>=0?474:473),epyear=474+(epbase%2820);
+  return jd+(jm<=7?(jm-1)*31:(jm-1)*30+6)
+    +Math.floor((epyear*682-110)/2816)+(epyear-1)*365
+    +Math.floor(epbase/2820)*1029983+1948320;
+}
+function isJalaliLeapYear(y){
+  return jalaliToDayNumber(y+1,1,1)-jalaliToDayNumber(y,1,1)===366;
+}
+function jalaliWeekdayIndex(y,m,d){
+  var j=jalaliToDayNumber(y,m,d)+68569,n=Math.floor((4*j)/146097);
+  j=j-Math.floor((146097*n+3)/4);
+  var gy=Math.floor((4000*(j+1))/1461001);
+  j=j-Math.floor((1461*gy)/4)+31;
+  var gm=Math.floor((80*j)/2447),gd=j-Math.floor((2447*gm)/80);
+  j=Math.floor(gm/11); gm=gm+2-12*j; gy=100*(n-49)+gy+j;
+  return (new Date(gy,gm-1,gd).getDay()+1)%7;
+}
+
+function jalaliDaysInMonth(y,m){
+  if(m>=1 && m<=6) return 31;
+  if(m>=7 && m<=11) return 30;
+  return isJalaliLeapYear(y) ? 30 : 29;
+}
+var cy=1405,cm=1;
+function setCalendarDate(y,m,d){
+  if(window.calTarget){
+    window.calTarget.value=y+"/"+String(m).padStart(2,"0")+"/"+String(d).padStart(2,"0");
+    window.calTarget.dispatchEvent(new Event("input",{bubbles:true}));
+    window.calTarget.dispatchEvent(new Event("change",{bubbles:true}));
+  }
+  closeCal();
+}
+function pickDate(el){
+  window.calTarget=el;
+  var old=document.getElementById("calOverlay");if(old)old.remove();
+  var ov=document.createElement("div");ov.id="calOverlay";ov.className="jalali-modal";
+  var box=document.createElement("div");box.className="jalali-box";
+  box.innerHTML='<div class="pcal-head"><button type="button" class="btn" id="calPrev">‹</button><b id="calTitle"></b><button type="button" class="btn" id="calNext">›</button></div><div class="pcal-week"><span>ش</span><span>ی</span><span>د</span><span>س</span><span>چ</span><span>پ</span><span>ج</span></div><div id="calGrid" class="pcal-grid"></div><div class="actions"><button type="button" class="btn" id="calToday">امروز</button><button type="button" class="btn" id="calCancel">انصراف</button></div>';
+  ov.appendChild(box);
+  /* A native <dialog> is in the browser top layer. Mounting the picker inside that dialog
+     keeps the picker in the same top layer, fixing the old "under the page" bug. */
+  var host=el.closest?el.closest("dialog"):null;
+  (host||document.documentElement).appendChild(ov);
+  var t=getTodayJalali(),v=(el.value||"").match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+  cy=v?+v[1]:t.y;cm=v?+v[2]:t.m;
+  document.getElementById("calPrev").onclick=function(){calMove(-1);};
+  document.getElementById("calNext").onclick=function(){calMove(1);};
+  document.getElementById("calCancel").onclick=closeCal;
+  document.getElementById("calToday").onclick=function(){setCalendarDate(t.y,t.m,t.d);};
+  calRender();
+}
+function calRender(){
+  var title=document.getElementById("calTitle"),grid=document.getElementById("calGrid");if(!title||!grid)return;
+  title.textContent=jalaliMonthName(cm)+" "+cy;grid.innerHTML="";
+  /* Saturday is column 0. Convert the exact Jalali first day to Gregorian, then use JS weekday. */
+  var offset=jalaliWeekdayIndex(cy,cm,1);
+  for(var i=0;i<offset;i++){var blank=document.createElement("span");blank.className="calblank";grid.appendChild(blank);}
+  var max=jalaliDaysInMonth(cy,cm);
+  for(var d=1;d<=max;d++){
+    var b=document.createElement("button");b.type="button";b.className="btn";b.textContent=d;
+    b.onclick=(function(day){return function(){setCalendarDate(cy,cm,day);};})(d);
+    grid.appendChild(b);
+  }
+}
+
+function calMove(n){cm+=n;if(cm<1){cm=12;cy--;}if(cm>12){cm=1;cy++;}calRender();}
+function closeCal(){var x=document.getElementById("calOverlay");if(x)x.remove();window.calTarget=null;}
+/* One capture-phase handler handles every current and future date input. */
+document.addEventListener("click",function(e){
+  var el=e.target;
+  if(el&&el.matches&&el.matches('input.jalali,input[data-date],input[placeholder*="تاریخ"],input[type="date"]')){
+    e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+    if(el.type==="date")el.type="text";
+    el.readOnly=true;el.setAttribute("data-jalali","1");pickDate(el);
+  }
+},true);
+function renderAll(){
+ const p=active();document.getElementById("dashPeriod").textContent=p?p.name:"دوره‌ای ایجاد نشده";
+ document.getElementById("periodSelect").innerHTML='<option value="">انتخاب دوره</option>'+db.periods.map(x=>'<option value="'+x.id+'" '+(x.id===db.active?"selected":"")+'>'+x.name+'</option>').join("");
+ document.getElementById("periodList").innerHTML=db.periods.length?db.periods.map(function(x){return '<div class="card" style="margin:8px 0"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>'+x.name+'</b><button class="btn" onclick="openEditPeriod(\''+x.id+'\')">✏️ ویرایش دوره</button></div><div class="muted">'+x.halls.map(function(h){return "سالن "+h.hall+": "+h.initial+" قطعه، تلفات مسیر "+h.routeMortality+"، ورود "+h.date}).join(" | ")+'</div></div>'}).join(""):'<div class="empty">هنوز دوره‌ای ثبت نشده</div>';
+ const halls=p?p.halls:[], mort=db.mortality,weights=db.weights;
+ let totalInitial=halls.reduce((a,h)=>a+h.initial,0),totalRoute=halls.reduce((a,h)=>a+h.routeMortality,0),totalDaily=mort.reduce((a,x)=>a+x.dead,0),totalDead=totalRoute+totalDaily;
+ document.getElementById("dashBirds").textContent=Math.max(0,totalInitial-totalDead).toLocaleString("fa-IR");
+ document.getElementById("dashMort").textContent=totalDead.toLocaleString("fa-IR");
+ document.getElementById("dashMortPct").textContent=(totalInitial?(totalDead/totalInitial*100):0).toFixed(2)+"%";
+ document.getElementById("dashWeek1").textContent=mort.filter(function(x){return Number(x.week)<=1;}).reduce(function(a,x){return a+x.dead;},0).toLocaleString("fa-IR");
+ document.getElementById("dashSurvival").textContent=(totalInitial?((totalInitial-totalDead)/totalInitial*100):100).toFixed(2)+"%";
+ document.getElementById("dashFeed").textContent=db.stockUse.reduce((a,x)=>a+x.qty,0).toLocaleString("fa-IR")+" کیلو";
+ document.getElementById("today").textContent=new Date().toLocaleDateString("fa-IR");
+ 
+ var totalFeed=db.stockUse.reduce(function(a,x){return a+x.qty;},0);
+ var hallData=halls.map(function(h){
+   var d=mort.filter(function(x){return x.hall==h.hall;}).reduce(function(a,x){return a+x.dead;},0)+h.routeMortality;
+   var wlist=weights.filter(function(x){return x.hall==h.hall;});
+   var w=wlist.length?wlist[wlist.length-1].weight:(h.weight||0);
+   var cur=Math.max(0,h.initial-d);
+   var share=totalInitial?cur/totalInitial:0;
+   var hallFeed=totalFeed*share;
+   var liveKg=cur*w;
+   var fcr=liveKg>0?hallFeed/liveKg:0;
+   return {h:h,d:d,w:w,cur:cur,fcr:fcr};
+ });
+ var totalLiveKg=hallData.reduce(function(a,x){return a+x.cur*x.w;},0);
+ var totalFcr=totalLiveKg>0?totalFeed/totalLiveKg:0;
+ document.getElementById("hallTable").innerHTML=hallData.map(function(x){
+   return '<tr><td>سالن '+x.h.hall+'</td><td>'+x.h.date+'</td><td>'+x.cur.toLocaleString("fa-IR")+
+   '</td><td>'+x.d.toLocaleString("fa-IR")+'</td><td>'+((x.d/x.h.initial*100)||0).toFixed(2)+
+   '%</td><td>'+x.w+'</td><td>'+ (x.fcr?x.fcr.toFixed(2):"—") +'</td></tr>';
+ }).join("");
+ document.getElementById("hallCards").innerHTML=
+ '<div class="card"><b>ضریب کل مرغداری</b><div class="num">'+(totalFcr?totalFcr.toFixed(2):"—")+
+ '</div><div class="muted">بر مبنای دان مصرفی کل و وزن زنده فعلی</div></div>'+
+ hallData.map(function(x){return '<div class="card"><b>ضریب سالن '+x.h.hall+
+ '</b><div class="num">'+(x.fcr?x.fcr.toFixed(2):"—")+
+ '</div><div class="muted">وزن '+x.w+' کیلو — موجودی '+x.cur.toLocaleString("fa-IR")+'</div></div>';}).join("");
+document.getElementById("stockTotal").textContent=(db.stockIn.reduce((a,x)=>a+x.qty,0)-db.stockUse.reduce((a,x)=>a+x.qty,0)).toLocaleString("fa-IR")+" کیلو";
+ document.getElementById("stockUsed").textContent=db.stockUse.reduce((a,x)=>a+x.qty,0).toLocaleString("fa-IR")+" کیلو";
+ document.getElementById("useType").innerHTML=[...new Set(db.stockIn.map(x=>x.type).filter(Boolean))].map(x=>'<option>'+x+'</option>').join("")||'<option>ذرت</option>';
+ ["costPartner","receiptPartner"].forEach(id=>document.getElementById(id).innerHTML=db.partners.map(x=>'<option>'+x.name+'</option>').join("")||'<option>—</option>');
+ document.getElementById("partnerTable").innerHTML=db.partners.map((x,i)=>'<tr><td>'+x.name+'</td><td>'+x.capital.toLocaleString("fa-IR")+'</td><td><button class="btn danger" onclick="db.partners.splice('+i+',1);save()">حذف</button></td></tr>').join("");
+ document.getElementById("costTable").innerHTML=db.costs.map(function(x,i){return '<tr><td>'+x.date+'</td><td>'+x.name+'</td><td>'+x.partner+'</td><td>'+x.amount.toLocaleString("fa-IR")+'</td><td><button class="btn" onclick="editCost('+i+')">✏️</button><button class="btn danger" onclick="db.costs.splice('+i+',1);save()">حذف</button></td></tr>'}).join("");
+ document.getElementById("mortTable").innerHTML=mort.map(function(x,i){return '<tr><td>'+x.date+'</td><td>'+x.weekday+'</td><td>'+x.hall+'</td><td>'+x.dead+'</td><td><button class="btn" onclick="editMortality('+i+')">✏️</button><button class="btn danger" onclick="db.mortality.splice('+i+',1);save()">حذف</button></td></tr>'}).join("");
+ let chicken=db.sales.filter(x=>x.type==="مرغ زنده"),manure=db.sales.filter(x=>x.type==="کود");document.getElementById("loads").textContent=db.sales.length;document.getElementById("tonnage").textContent=(db.sales.reduce((a,x)=>a+x.net,0)/1000).toFixed(2);document.getElementById("chickenSales").textContent=chicken.reduce((a,x)=>a+x.net,0).toLocaleString("fa-IR")+" کیلو";document.getElementById("manureSales").textContent=manure.reduce((a,x)=>a+x.net,0).toLocaleString("fa-IR")+" کیلو";
+}
+
+
+document.addEventListener("DOMContentLoaded", function(){
+  var btn=document.getElementById("newPeriodBtn");
+  if(btn) btn.addEventListener("click", function(){ openNewPeriod(); });
+  renderAll();
+  go("dashboard");
+});
+
+document.addEventListener("input",function(e){
+  if(e.target && (e.target.id==="fullWeight" || e.target.id==="emptyWeight")){
+    var f=+val("fullWeight")||0,em=+val("emptyWeight")||0;
+    var n=document.getElementById("netWeight");if(n)n.value=Math.max(0,f-em);
+  }
+});
+</script>
+</body></html>
